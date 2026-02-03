@@ -1,6 +1,6 @@
 */node_modules
 .idea
 */dist
-./src/kinetic-env.d.ts
+/src/kinetic-env.d.ts
 test-kinetic.ts
 /node_modules/
