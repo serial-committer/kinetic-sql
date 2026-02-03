@@ -3,3 +3,4 @@
 */dist
 ./src/kinetic-env.d.ts
 test-kinetic.ts
+/node_modules/
