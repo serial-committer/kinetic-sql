@@ -1,0 +1,5 @@
+*/node_modules
+.idea
+*/dist
+./src/kinetic-env.d.ts
+test-kinetic.ts
