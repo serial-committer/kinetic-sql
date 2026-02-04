@@ -5,7 +5,6 @@
 
 Kinetic SQL is a next-gen Node.js client that wraps **PostgreSQL** and **MySQL** with a developer experience similar to Supabase, but for your own backend.
 
-![Kinetic Demo](https://placehold.co/600x200?text=Imagine+Autocomplete+GIF+Here)
 ## ✨ Features
 
 - **🔮 Invisible Type Safety:** Run `npx k-sql gen` and your entire database schema is auto-injected into your client. No manual interfaces.
