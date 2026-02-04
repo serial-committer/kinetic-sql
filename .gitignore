@@ -6,3 +6,4 @@ test-kinetic.ts
 dist
 .env
 .DS_Store
+eslint.config.mjs

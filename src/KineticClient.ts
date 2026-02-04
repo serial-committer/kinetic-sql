@@ -3,6 +3,7 @@ import type {IDriver} from './drivers/DriverInterface.js';
 import {KineticError} from './utils/KineticError.js';
 
 /*--- TYPE SYSTEM RE-CONNECTION --*/
+
 /* 1. Global Registry (The "Slot" for the generator) */
 export interface Register {
 }
@@ -17,9 +18,18 @@ export interface KineticSchema {
 export type ResolvedDB = Register extends { schema: infer S } ? S : KineticSchema;
 
 /* The Flexible Config */
-export type KineticConfig =
-    | { type: 'pg'; connectionString: string; poolSize?: number; realtimeEnabled?: boolean }
-    | { type: 'pg'; host: string; port: number; user: string; password?: string; database: string; ssl?: boolean; poolSize?: number; realtimeEnabled?: boolean };
+export type KineticConfig = |
+    { type: 'pg'; connectionString: string; poolSize?: number; realtimeEnabled?: boolean }
+    |
+    {
+        type: 'pg'; host: string; port: number; user: string; password?: string;
+        database: string; ssl?: boolean; poolSize?: number; realtimeEnabled?: boolean
+    }
+    |
+    {
+        type: 'mysql'; host: string; user: string; password?: string;
+        database: string; port?: number; poolSize?: number; realtimeEnabled?: boolean;
+    };
 
 /* 4. Default the Generic to ResolvedDB */
 export class KineticClient<Schema extends KineticSchema = ResolvedDB> {

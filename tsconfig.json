@@ -7,8 +7,12 @@
     "strict": true,
     "esModuleInterop": true,
     "rootDir": "./src",
-    "outDir": "./dist"
+    "outDir": "./dist",
+    "typeRoots": [
+      "./node_modules/@types",
+      "./src/typings"
+    ]
   },
-  "include": [ "src/**/*" ],
+  "include": [ "src/**/*", "mysql-events.d.ts" ],
   "exclude": [ "dist", "node_modules" ]
 }
