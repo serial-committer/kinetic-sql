@@ -22,5 +22,10 @@ export default defineConfig({
     shims: true,
 
     // 7. External deps (Don't bundle these, let the user install them)
-    external: ['postgres', 'drizzle-orm'],
+    external: [
+        'postgres',
+        'drizzle-orm',
+        'mysql2',
+        '@rodrigogs/mysql-events'
+    ],
 });
