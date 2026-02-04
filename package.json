@@ -18,7 +18,7 @@
     }
   },
   "bin": {
-    "k-sql": "./dist/cli/generate.cjs"
+    "k-sql": "dist/cli/generate.cjs"
   },
   "files": [
     "dist",
@@ -64,6 +64,6 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/serial-committer/kinetic-sql"
+    "url": "git+https://github.com/serial-committer/kinetic-sql.git"
   }
 }
