@@ -1,6 +1,7 @@
 {
   "name": "kinetic-sql",
   "version": "1.0.0",
+  "description": "Zero-config, type-safe Postgres & MySQL client with Realtime subscriptions.",
   "type": "module",
   "main": "./dist/index.js",
   "scripts": {
@@ -22,15 +23,29 @@
   "files": [
     "dist",
     "README.md",
-    "package.json"
+    "LICENSE"
   ],
-  "keywords": [],
+  "keywords": [
+    "postgres",
+    "mysql",
+    "orm",
+    "realtime",
+    "typescript",
+    "rpc",
+    "subscriptions",
+    "sql",
+    "events"
+  ],
   "author": {
     "name": "Kapil Kumar",
     "email": "kapilkumar@yourservice.now",
     "url": "https://the-debug-knight.bio/login?autoLogin=true&code=GUEST-95CC"
   },
-  "license": "ISC",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/serial-committer/kinetic-sql"
+  },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
     "@stylistic/eslint-plugin": "^5.7.1",
