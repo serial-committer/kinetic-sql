@@ -1,111 +1,65 @@
-import {drizzle, PostgresJsDatabase} from 'drizzle-orm/postgres-js';
-import postgres from 'postgres';
-import {BROADCAST_FUNC_SQL, createTriggerSql} from './internal/sql-templates.js';
+import {PostgresDriver} from './drivers/postgres/PostgresDriver.js';
+import type {IDriver} from './drivers/DriverInterface.js';
+import {KineticError} from './utils/KineticError.js';
 
-/* 1. Global Registry (The "Slot" for the generator to fill) */
+/*--- TYPE SYSTEM RE-CONNECTION --*/
+/* 1. Global Registry (The "Slot" for the generator) */
 export interface Register {
 }
 
-/* 2. Base Schema Shape */
-export type KineticSchema = {
+/* 2. Base Schema */
+export interface KineticSchema {
     tables: Record<string, any>;
     functions: Record<string, { args: any; returns: any }>;
-};
-
-/* 3. The Magic Type Resolver
-   Did the user generate types?
-   Yes -> Use them.
-   No  -> Fallback to generic KineticSchema.
-*/
-export type ResolvedDB = Register extends { schema: infer S }
-    ? S
-    : KineticSchema;
-
-export interface KineticConfig {
-    connectionString: string;
-    realtimeEnabled?: boolean;
-    poolSize?: number;
 }
 
-/* 4. The Class: Default Schema is 'ResolvedDB */
-export class KineticClient<Schema extends KineticSchema = ResolvedDB> {
-    private readonly sql: postgres.Sql;
-    public orm: PostgresJsDatabase;
-    private config: KineticConfig;
+/* 3. The Magic Resolver */
+export type ResolvedDB = Register extends { schema: infer S } ? S : KineticSchema;
 
-    /* Factory defaults to ResolvedDB so the user gets types automatically */
+/* The Flexible Config */
+export type KineticConfig =
+    | { type: 'pg'; connectionString: string; poolSize?: number; realtimeEnabled?: boolean }
+    | { type: 'pg'; host: string; port: number; user: string; password?: string; database: string; ssl?: boolean; poolSize?: number; realtimeEnabled?: boolean };
+
+/* 4. Default the Generic to ResolvedDB */
+export class KineticClient<Schema extends KineticSchema = ResolvedDB> {
+    private readonly driver: IDriver;
+
+    /* Factory defaults to ResolvedDB */
     static async create<S extends KineticSchema = ResolvedDB>(config: KineticConfig): Promise<KineticClient<S>> {
         const client = new KineticClient<S>(config);
-        if (config.realtimeEnabled) {
-            await client.initializeRealtimeSystem();
-        }
+        await client.init();
         return client;
     }
 
-    private constructor(config: KineticConfig) {
-        this.config = config;
-        this.sql = postgres(config.connectionString, {max: config.poolSize || 10});
-        this.orm = drizzle(this.sql);
-    }
-
-    private async initializeRealtimeSystem() {
-        try {
-            await this.sql.unsafe(BROADCAST_FUNC_SQL);
-        } catch (err) {
-            console.warn('⚠️ Kinetic SQL: Failed to install Realtime system.', err);
+    private constructor(private config: KineticConfig) {
+        /* FACTORY LOGIC: Pick the driver based on config */
+        if (config.type === 'pg') {
+            this.driver = new PostgresDriver(config);
+        } else {
+            throw new KineticError('CONFIG_ERROR', `Unsupported DB type: ${(config as any).type}`);
         }
     }
 
-    /**
-     * RPC WRAPPER
-     */
+    private async init() {
+        /* Initialize the specific driver */
+        if (this.driver instanceof PostgresDriver) {
+            await this.driver.init();
+        }
+    }
+
+    /* -- PROXY METHODS (Pass through to the driver) -- */
     async rpc<FnName extends keyof Schema['functions'] & string>(
         functionName: FnName,
         params: Schema['functions'][FnName]['args']
-    ): Promise<{ data: Schema['functions'][FnName]['returns'] | null; error: any }> {
-        try {
-            const args = Object.values(params as object || {});
-            const paramKeys = Object.keys(params as object || {});
-            const paramStr = paramKeys.map((k, i) => `${k} := $${i + 1}`).join(', ');
-
-            const query = `SELECT * FROM "${functionName}"(${paramStr})`;
-            const result = await this.sql.unsafe(query, args as any[]);
-
-            /* Handle void returns or single rows vs arrays */
-            return {data: result as any, error: null};
-        } catch (err) {
-            return {data: null, error: err};
-        }
+    ) {
+        return this.driver.rpc(functionName, params);
     }
 
-    /**
-     * REALTIME SUBSCRIPTIONS
-     */
     async subscribe<TableName extends keyof Schema['tables'] & string>(
         tableName: TableName,
         callback: (payload: { action: 'INSERT' | 'UPDATE' | 'DELETE', data: Schema['tables'][TableName] }) => void
     ) {
-        if (!this.config.realtimeEnabled) throw new Error("Realtime disabled");
-
-        try {
-            await this.sql.unsafe(createTriggerSql(tableName));
-        } catch (err) {
-            console.error(`Failed to attach trigger to ${tableName}`, err);
-        }
-
-        const listener = postgres(this.config.connectionString, {max: 1});
-
-        await listener.listen('table_events', (payload) => {
-            const event = JSON.parse(payload);
-            if (event.table === tableName) {
-                callback(event);
-            }
-        });
-
-        return {unsubscribe: () => listener.end()};
-    }
-
-    async end() {
-        await this.sql.end();
+        return this.driver.subscribe(tableName, callback);
     }
 }

@@ -3,14 +3,27 @@
   "version": "1.0.0",
   "type": "module",
   "main": "./dist/index.js",
-  "bin": {
-    "k-sql": "./dist/cli.js"
-  },
   "scripts": {
-    "gen": "ts-node src/cli/generate.ts",
-    "build": "tsup src/index.ts --format esm,cjs --dts",
-    "dev": "ts-node-esm src/index.ts"
+    "prebuild": "rm -rf dist",
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "gen": "node dist/cli/generate.js"
   },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "bin": {
+    "k-sql": "./dist/cli/generate.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "package.json"
+  ],
   "keywords": [],
   "author": {
     "name": "Kapil Kumar",
