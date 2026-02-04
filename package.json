@@ -8,7 +8,7 @@
     "prebuild": "rm -rf dist",
     "build": "tsup",
     "dev": "tsup --watch",
-    "gen": "node dist/cli/generate.js"
+    "gen": "node dist/cli/generate.cjs"
   },
   "exports": {
     ".": {
@@ -18,13 +18,33 @@
     }
   },
   "bin": {
-    "k-sql": "./dist/cli/generate.js"
+    "k-sql": "./dist/cli/generate.cjs"
   },
   "files": [
     "dist",
     "README.md",
     "LICENSE"
   ],
+  "dependencies": {
+    "@rodrigogs/mysql-events": "^0.6.0",
+    "drizzle-orm": "^0.45.1",
+    "mysql2": "^3.16.3",
+    "postgres": "^3.4.8"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.2",
+    "@stylistic/eslint-plugin": "^5.7.1",
+    "@types/node": "^25.2.0",
+    "@typescript-eslint/parser": "^8.54.0",
+    "eslint": "^9.39.2",
+    "eslint-config-next": "^16.1.6",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-perfectionist": "^5.4.0",
+    "ts-node": "^10.9.2",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.54.0"
+  },
   "keywords": [
     "postgres",
     "mysql",
@@ -45,25 +65,5 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/serial-committer/kinetic-sql"
-  },
-  "devDependencies": {
-    "@eslint/js": "^9.39.2",
-    "@stylistic/eslint-plugin": "^5.7.1",
-    "@types/node": "^25.2.0",
-    "@typescript-eslint/parser": "^8.54.0",
-    "eslint": "^9.39.2",
-    "eslint-config-next": "^16.1.6",
-    "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-perfectionist": "^5.4.0",
-    "ts-node": "^10.9.2",
-    "tsup": "^8.5.1",
-    "typescript": "^5.9.3",
-    "typescript-eslint": "^8.54.0"
-  },
-  "dependencies": {
-    "@rodrigogs/mysql-events": "^0.6.0",
-    "drizzle-orm": "^0.45.1",
-    "mysql2": "^3.16.3",
-    "postgres": "^3.4.8"
   }
 }
