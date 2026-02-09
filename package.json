@@ -1,12 +1,13 @@
 {
   "name": "kinetic-sql",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Zero-config, type-safe Postgres & MySQL client with Realtime subscriptions.",
   "type": "module",
   "main": "./dist/index.js",
   "scripts": {
     "prebuild": "rm -rf dist",
     "build": "tsup",
+    "prepublishOnly": "npm run build",
     "dev": "tsup --watch",
     "gen": "node dist/cli/generate.cjs"
   },
