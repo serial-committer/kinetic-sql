@@ -1,6 +1,8 @@
-import {PostgresDriver} from './drivers/postgres/PostgresDriver.js';
-import type {IDriver} from './drivers/DriverInterface.js';
 import {KineticError} from './utils/KineticError.js';
+import type {IDriver} from './drivers/DriverInterface.js';
+import {SQLiteDriver} from './drivers/sqlite/SQLiteDriver.js';
+import {MysqlDriver} from './drivers/mysql/MySQLDriver.js';
+import {PostgresDriver} from './drivers/postgres/PostgresDriver.js';
 
 /*--- TYPE SYSTEM RE-CONNECTION --*/
 
@@ -29,6 +31,10 @@ export type KineticConfig = |
     {
         type: 'mysql'; host: string; user: string; password?: string;
         database: string; port?: number; poolSize?: number; realtimeEnabled?: boolean;
+    }
+    |
+    {
+        type: 'sqlite'; connectionString?: string; filename?: string; options?: any
     };
 
 /* 4. Default the Generic to ResolvedDB */
@@ -46,16 +52,17 @@ export class KineticClient<Schema extends KineticSchema = ResolvedDB> {
         /* FACTORY LOGIC: Pick the driver based on config */
         if (config.type === 'pg') {
             this.driver = new PostgresDriver(config);
+        } else if (config.type === 'mysql') {
+            this.driver = new MysqlDriver(config);
+        } else if (config.type === 'sqlite') {
+            this.driver = new SQLiteDriver(config);
         } else {
             throw new KineticError('CONFIG_ERROR', `Unsupported DB type: ${(config as any).type}`);
         }
     }
 
     private async init() {
-        /* Initialize the specific driver */
-        if (this.driver instanceof PostgresDriver) {
-            await this.driver.init();
-        }
+        await this.driver.init();
     }
 
     /* -- PROXY METHODS (Pass through to the driver) -- */
@@ -71,5 +78,9 @@ export class KineticClient<Schema extends KineticSchema = ResolvedDB> {
         callback: (payload: { action: 'INSERT' | 'UPDATE' | 'DELETE', data: Schema['tables'][TableName] }) => void
     ) {
         return this.driver.subscribe(tableName, callback);
+    }
+
+    get raw() {
+        return this.driver.raw;
     }
 }

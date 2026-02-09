@@ -26,6 +26,7 @@ export default defineConfig({
         'postgres',
         'drizzle-orm',
         'mysql2',
-        '@rodrigogs/mysql-events'
+        '@rodrigogs/mysql-events',
+        'better-sqlite3'
     ],
 });

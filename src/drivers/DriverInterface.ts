@@ -1,4 +1,6 @@
 export interface IDriver {
+    init(): Promise<void>;
+
     rpc(name: string, params: any): Promise<{ data: any; error: any }>;
 
     subscribe(table: string, cb: (data: any) => void): Promise<{ unsubscribe: () => void }>;

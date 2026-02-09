@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import postgres from 'postgres';
 import mysql from 'mysql2/promise';
+import Database from 'better-sqlite3';
 import fs from 'fs';
 import path from 'path';
 import {fileURLToPath} from 'url';
@@ -24,6 +25,14 @@ const MYSQL_TYPE_MAP: Record<string, string> = {
     json: 'any', blob: 'Buffer', longblob: 'Buffer',
     /*  Common MySQL boolean convention */
     tinyint1: 'boolean'
+};
+
+const SQLITE_TYPE_MAP: Record<string, string> = {
+    integer: 'number', int: 'number', smallint: 'number', bigint: 'number',
+    text: 'string', varchar: 'string', char: 'string', clob: 'string',
+    blob: 'Buffer',
+    real: 'number', double: 'number', float: 'number', numeric: 'number',
+    boolean: 'boolean', bool: 'boolean'
 };
 
 /*  -- ARGUMENT PARSING -- */
@@ -128,15 +137,55 @@ async function generateMysql(config: any) {
     }
 }
 
+async function generateSqlite(config: any) {
+    // 1. Resolve DB path (support --db, --filename, or --connection)
+    const dbPath = config.db || config.filename || config.connection;
+    if (!dbPath) {
+        throw new Error('❌ Missing SQLite file path. Usage: k-sql gen --type=sqlite --db=./dev.db');
+    }
+
+    const db = new Database(dbPath, {readonly: true});
+
+    try {
+        // 2. Get Tables
+        const tables: any[] = db.prepare(`SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'`).all();
+
+        const allColumns = [];
+
+        // 3. Loop tables and get columns via PRAGMA
+        for (const tbl of tables) {
+            const tableInfo: any[] = db.prepare(`PRAGMA table_info('${tbl.name}')`).all();
+
+            for (const col of tableInfo) {
+                // clean type (e.g. "VARCHAR(255)" -> "varchar")
+                let cleanType = (col.type || 'text').split('(')[0].toLowerCase().trim();
+
+                allColumns.push({
+                    table_name: tbl.name,
+                    column_name: col.name,
+                    udt_name: cleanType,
+                    is_nullable: col.notnull === 1 ? 'NO' : 'YES' // SQLite: 1=NOT NULL
+                });
+            }
+        }
+
+        return {columns: allColumns, functions: [], typeMap: SQLITE_TYPE_MAP};
+    } finally {
+        db.close();
+    }
+}
+
 /*  -- MAIN -- */
 async function main() {
     const args = parseArgs();
-    console.log(`🔮 Kinetic SQL: Introspecting ${args.type === 'mysql' ? 'MySQL' : 'PostgreSQL'}...`);
+    console.log(`🔮 Kinetic SQL: Introspecting ${args.type || 'pg'}...`);
 
     try {
         let result;
         if (args.type === 'mysql') {
             result = await generateMysql(args);
+        } else if (args.type === 'sqlite') {
+            result = await generateSqlite(args);
         } else {
             result = await generatePostgres(args);
         }
@@ -150,7 +199,7 @@ async function main() {
             /*  Special handling for MySQL tinyint(1) -> boolean */
             let tsType = typeMap[col.udt_name] || 'any';
             if (args.type === 'mysql' && col.udt_name === 'tinyint') {
-                /* In MySQL, tinyint is often used as boolean, but we can default to number to be safe or check column type string like "tinyint(1)" if we had it.*/
+                /* In MySQL, tinyint is often used as boolean, but we can default to number to be safe */
                 tsType = 'number';
             }
 
