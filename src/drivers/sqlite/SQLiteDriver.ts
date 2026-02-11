@@ -40,15 +40,26 @@ export class SQLiteDriver implements IDriver {
         if (!cbs || cbs.length === 0) return;
 
         try {
-            // For DELETE, the row is gone, so data is null.
-            // For INSERT/UPDATE, we fetch the fresh row.
-            let row = null;
-            if (action !== 'DELETE') {
-                row = this.db.prepare(`SELECT * FROM ${table} WHERE rowid = ?`).get(rowid);
+            /* For DELETE, the row is gone, so data is null. */
+            if (action === 'DELETE') {
+                const payload = {action, data: {rowid}};
+                cbs.forEach(cb => cb(payload));
+                return;
             }
 
-            const payload = {action, data: row};
-            cbs.forEach(cb => cb(payload));
+            /* In case of INSERT/UPDATE, we fetch the fresh row */
+            setImmediate(() => {
+                try {
+                    const row = this.db.prepare(`SELECT * FROM ${table} WHERE rowid = ?`).get(rowid);
+                    /* If a row was found (it wasn't deleted immediately after), emit it */
+                    if (row) {
+                        const payload = {action, data: row};
+                        cbs.forEach(cb => cb(payload));
+                    }
+                } catch (err) {
+                    console.error(`⚠️ Kinetic SQLite: Async fetch failed for ${table}`, err);
+                }
+            });
         } catch (err) {
             console.error(`⚠️ Kinetic SQLite: Failed to bridge event for ${table}`, err);
         }
@@ -78,7 +89,7 @@ export class SQLiteDriver implements IDriver {
 
     private attachTriggers(table: string) {
         try {
-            // SQLite triggers allow us to capture the exact moment a change happens
+            /* SQLite triggers: Capture the exact moment a change happens */
             this.db.exec(`
                 CREATE TRIGGER IF NOT EXISTS kinetic_${table}_insert AFTER INSERT ON ${table}
                 BEGIN
@@ -110,10 +121,10 @@ export class SQLiteDriver implements IDriver {
             const placeholders = keys.map(() => '?').join(',');
             const values = Object.values(params || {});
 
-            // Executes: SELECT my_function(?, ?)
+            /* Executes: SELECT my_function(?, ?) */
             const stmt = this.db.prepare(`SELECT ${name}(${placeholders})`);
 
-            // We use .all() to be safe, though UDFs usually return scalars
+            /* Using  use .all() to be safe, though UDFs usually return scalars */
             const result = stmt.all(...values);
 
             return {data: result, error: null};
