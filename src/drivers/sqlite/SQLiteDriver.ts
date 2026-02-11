@@ -36,10 +36,10 @@ export class SQLiteDriver implements IDriver {
      * Fetches the full row data to mimic Postgres "payload" behavior.
      */
     private handleEvent(table: string, action: string, rowid: number | bigint) {
-        console.log('🟢 1. BRIDGE CALLED:', table, action, rowid);
+        /* console.log('🟢 1. BRIDGE CALLED:', table, action, rowid); */
         const cbs = this.subscribers.get(table);
         if (!cbs || cbs.length === 0) {
-            console.log(`🔴 No subscribers for table ${table}`);
+            /* console.log(`🔴 No subscribers for table ${table}`); */
             return;
         }
 
@@ -53,7 +53,7 @@ export class SQLiteDriver implements IDriver {
 
             /* In case of INSERT/UPDATE, we fetch the fresh row */
             setImmediate(() => {
-                console.log(`🟡 Fetching fresh row for ${table} with rowid ${rowid}`)
+                /* console.log(`🟡 Fetching fresh row for ${table} with rowid ${rowid}`); */
                 try {
                     const row = this.db.prepare(`SELECT * FROM ${table} WHERE rowid = ?`).get(rowid);
                     /* If a row was found (it wasn't deleted immediately after), emit it */
