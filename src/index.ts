@@ -1,3 +1,3 @@
-export * from './KineticClient.js';
-export * from './utils/KineticError.js';
+export {KineticClient} from './KineticClient.js';
+export type {KineticConfig, KineticSchema, Register} from './KineticClient.js';
 export {sql, eq, desc, asc, and, or} from 'drizzle-orm';

@@ -1,7 +1,9 @@
 import Database from 'better-sqlite3';
 import type {IDriver} from '../DriverInterface.js';
+import {KineticLogger} from "../../utils/KineticLogger.js";
 
 export class SQLiteDriver implements IDriver {
+    private logger: KineticLogger;
     public db: Database.Database;
     private subscribers: Map<string, Function[]> = new Map();
 
@@ -13,6 +15,10 @@ export class SQLiteDriver implements IDriver {
         } else if (config.filename) {
             filename = config.filename;
         }
+
+        this.logger = new KineticLogger(config.debug, 'Kinetic:SQLite');
+
+        if (config.type !== 'sqlite') throw new Error('Invalid config');
 
         this.db = new Database(filename, config.options || {});
     }
@@ -29,6 +35,7 @@ export class SQLiteDriver implements IDriver {
         this.db.function('kinetic_bridge', (table: string, action: string, rowid: number | bigint) => {
             this.handleEvent(table, action, rowid);
         });
+        this.logger.info('Bridge Registered successfully');
     }
 
     /**
@@ -36,10 +43,10 @@ export class SQLiteDriver implements IDriver {
      * Fetches the full row data to mimic Postgres "payload" behavior.
      */
     private handleEvent(table: string, action: string, rowid: number | bigint) {
-        /* console.log('🟢 1. BRIDGE CALLED:', table, action, rowid); */
+        this.logger.info('🟢 Bridge called for:', table, action, rowid);
         const cbs = this.subscribers.get(table);
         if (!cbs || cbs.length === 0) {
-            /* console.log(`🔴 No subscribers for table ${table}`); */
+            this.logger.warn(`🔴 No subscribers for table ${table}`);
             return;
         }
 
@@ -53,7 +60,7 @@ export class SQLiteDriver implements IDriver {
 
             /* In case of INSERT/UPDATE, we fetch the fresh row */
             setImmediate(() => {
-                /* console.log(`🟡 Fetching fresh row for ${table} with rowid ${rowid}`); */
+                this.logger.info(`🟢 Fetching fresh row for ${table} with rowid ${rowid}`);
                 try {
                     const row = this.db.prepare(`SELECT * FROM ${table} WHERE rowid = ?`).get(rowid);
                     /* If a row was found (it wasn't deleted immediately after), emit it */
@@ -62,11 +69,11 @@ export class SQLiteDriver implements IDriver {
                         cbs.forEach(cb => cb(payload));
                     }
                 } catch (err) {
-                    console.error(`⚠️ Kinetic SQLite: Async fetch failed for ${table}`, err);
+                    this.logger.error(`⚠️ Kinetic SQLite: Async fetch failed for ${table}`, err);
                 }
             });
         } catch (err) {
-            console.error(`⚠️ Kinetic SQLite: Failed to bridge event for ${table}`, err);
+            this.logger.error(`⚠️ Kinetic SQLite: Failed to bridge event for ${table}`, err);
         }
     }
 
@@ -112,13 +119,13 @@ export class SQLiteDriver implements IDriver {
                 END;
             `);
         } catch (err) {
-            console.warn(`⚠️ Kinetic SQLite: Could not attach triggers to ${table}. Ensure table exists.`, err);
+            this.logger.warn(`⚠️ Kinetic SQLite: Could not attach triggers to ${table}. Ensure table exists.`, err);
         }
     }
 
     /**
      * 5. RPC (Stored Procedures)
-     * Maps to a User Defined Function (UDF) call: SELECT funcName(?, ?)
+     * Maps to a User Defined Function (UDF) call: SELECT funcName('?', '?')
      */
     async rpc(name: string, params: any): Promise<{ data: any; error: any }> {
         try {

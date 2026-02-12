@@ -21,20 +21,20 @@ export type ResolvedDB = Register extends { schema: infer S } ? S : KineticSchem
 
 /* The Flexible Config */
 export type KineticConfig = |
-    { type: 'pg'; connectionString: string; poolSize?: number; realtimeEnabled?: boolean }
+    { type: 'pg'; debug?: boolean; connectionString: string; poolSize?: number; realtimeEnabled?: boolean }
     |
     {
-        type: 'pg'; host: string; port: number; user: string; password?: string;
+        type: 'pg'; debug?: boolean; host: string; port: number; user: string; password?: string;
         database: string; ssl?: boolean; poolSize?: number; realtimeEnabled?: boolean
     }
     |
     {
-        type: 'mysql'; host: string; user: string; password?: string;
+        type: 'mysql'; debug?: boolean; host: string; user: string; password?: string;
         database: string; port?: number; poolSize?: number; realtimeEnabled?: boolean;
     }
     |
     {
-        type: 'sqlite'; connectionString?: string; filename?: string; options?: any
+        type: 'sqlite'; debug?: boolean; connectionString?: string; filename?: string; options?: any
     };
 
 /* 4. Default the Generic to ResolvedDB */
