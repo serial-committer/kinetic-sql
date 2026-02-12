@@ -2,8 +2,10 @@ import mysql from 'mysql2/promise';
 import MySQLEvents from '@rodrigogs/mysql-events';
 import type {IDriver} from '../DriverInterface.js';
 import {KineticError} from '../../utils/KineticError.js';
+import {KineticLogger} from "../../utils/KineticLogger.js";
 
 export class MysqlDriver implements IDriver {
+    private logger: KineticLogger;
     private readonly pool: mysql.Pool;
     private instance: MySQLEvents | null = null;
     private subscribers: Map<string, (data: any) => void> = new Map();
@@ -21,6 +23,7 @@ export class MysqlDriver implements IDriver {
             connectionLimit: config.poolSize || 10,
             queueLimit: 0
         });
+        this.logger = new KineticLogger(config.debug, 'Kinetic:MySQL');
     }
 
     get raw() { return this.pool; }
@@ -72,15 +75,18 @@ export class MysqlDriver implements IDriver {
             }
         });
 
-        this.instance.on('error', (err: any) => console.error('MySQL Realtime Error:', err));
+        this.logger.info('Setup for realtime Broadcast of changes ready 🔔');
+        this.instance.on('error', (err: any) => this.logger.error('MySQL Realtime Error:', err));
     }
 
     async subscribe(tableName: string, callback: (payload: any) => void): Promise<{ unsubscribe: () => void }> {
         if (!this.config.realtimeEnabled) {
+            this.logger.error(`Cannot add table ${tableName} to realtime subscriptions. Set { realtimeEnabled: true } in config. ❌`);
             throw new KineticError('CONFIG_ERROR', 'Realtime is disabled. Set { realtimeEnabled: true } in config.');
         }
 
         this.subscribers.set(tableName, callback);
+        this.logger.info(`Table: ${tableName} configured for broadcasting changes in realtime 🔔`);
         return {
             unsubscribe: () => {
                 this.subscribers.delete(tableName);
@@ -93,6 +99,9 @@ export class MysqlDriver implements IDriver {
             const args = Object.values(params || {});
             const placeholders = args.map(() => '?').join(', ');
             const [rows] = await this.pool.execute(`CALL ${functionName}(${placeholders})`, args);
+
+            this.logger.info(`Calling RPC: ${functionName}(${args.join(', ')})`);
+
             return {data: rows, error: null};
         } catch (err) {
             return {data: null, error: new KineticError('RPC_ERROR', `MySQL RPC Failed: ${functionName}`, err)};

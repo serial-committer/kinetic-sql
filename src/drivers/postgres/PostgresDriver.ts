@@ -2,8 +2,10 @@ import postgres from 'postgres';
 import type {IDriver} from '../DriverInterface.js';
 import {KineticError} from '../../utils/KineticError.js';
 import {BROADCAST_FUNC_SQL, createTriggerSql} from './adapter.js';
+import {KineticLogger} from "../../utils/KineticLogger.js";
 
 export class PostgresDriver implements IDriver {
+    private logger: KineticLogger;
     public sql: postgres.Sql;
     private readonly config: any;
     public realtimeEnabled: boolean;
@@ -20,6 +22,7 @@ export class PostgresDriver implements IDriver {
             const {type, realtimeEnabled, poolSize, ...pgOptions} = config;
             this.sql = postgres({ ...pgOptions, max: poolSize || 10 });
         }
+        this.logger = new KineticLogger(config.debug, 'Kinetic:Postgres');
     }
 
     get raw(): any {
@@ -30,8 +33,9 @@ export class PostgresDriver implements IDriver {
         if (this.realtimeEnabled) {
             try {
                 await this.sql.unsafe(BROADCAST_FUNC_SQL);
+                this.logger.info('Setup for realtime Broadcast of changes ready 🔔');
             } catch (e) {
-                console.warn('⚠️ Kinetic Driver: Failed to install generic broadcast function.', e);
+                this.logger.warn('⚠️ Kinetic Driver: Failed to install generic broadcast function.', e);
             }
         }
     }
@@ -53,6 +57,8 @@ export class PostgresDriver implements IDriver {
             const query = `SELECT * FROM "${functionName}"(${paramStr})`;
             const result = await this.sql.unsafe(query, args);
 
+            this.logger.info(`Calling RPC: ${functionName} with params: (${paramStr})`);
+
             return {data: result, error: null};
         } catch (err) {
             return {
@@ -70,14 +76,16 @@ export class PostgresDriver implements IDriver {
         callback: (payload: any) => void
     ): Promise<{ unsubscribe: () => void }> {
         if (!this.realtimeEnabled) {
+            this.logger.error(`Cannot add table ${tableName} to realtime subscriptions. Set { realtimeEnabled: true } in config. ❌`);
             throw new KineticError('CONFIG_ERROR', "Realtime is disabled in config.");
         }
 
         /* 1. Ensure the specific table trigger exists */
         try {
             await this.sql.unsafe(createTriggerSql(tableName));
+            this.logger.info(`Table: ${tableName} configured for broadcasting changes in realtime 🔔`);
         } catch (err) {
-            console.error(`Failed to attach trigger to ${tableName}`, err);
+            this.logger.error(`Failed to attach trigger to ${tableName}`, err);
         }
 
         /**
@@ -105,7 +113,7 @@ export class PostgresDriver implements IDriver {
             if (event.table === tableName) {
                 callback(event);
             }
-        }).catch(err => console.error("Listener error:", err));
+        }).catch(err => this.logger.error("Listener error:", err));
 
         return {
             unsubscribe: async () => {
