@@ -1,7 +1,7 @@
 import {defineConfig} from 'tsup';
 
 export default defineConfig({
-    entry: ['src/index.ts', 'src/cli/generate.ts'],
+    entry: ['src/index.ts', 'src/cli/generate.ts', 'src/nestjs/KineticModule.ts'],
     format: ['cjs', 'esm'],
     dts: true,
     splitting: false,
@@ -10,12 +10,15 @@ export default defineConfig({
     minify: true,
     shims: true,
     treeshake: true,
-    /* External deps (Don't bundle these, let the user install them) */
+    /* External deps (User has to install them) */
     external: [
         'postgres',
         'drizzle-orm',
         'mysql2',
         '@rodrigogs/mysql-events',
-        'better-sqlite3'
+        'better-sqlite3',
+        '@nestjs/common',
+        '@nestjs/core',
+        'rxjs'
     ],
 });
