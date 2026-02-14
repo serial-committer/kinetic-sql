@@ -1,6 +1,6 @@
 {
   "name": "kinetic-sql",
-  "version": "1.3.0",
+  "version": "1.3.3",
   "description": "Zero-config, type-safe Postgres & MySQL client with Realtime subscriptions.",
   "type": "module",
   "main": "./dist/index.js",
