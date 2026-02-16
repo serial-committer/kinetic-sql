@@ -1,5 +1,8 @@
 #!/usr/bin/env node
 
+const fs = require('fs');
+const path = require('path');
+
 const BOX_WIDTH = 80;
 const BOLD = "\x1b[1m";
 const RESET = "\x1b[0m";
@@ -100,3 +103,10 @@ process.stdout.write(`${ STYLE }└${ "─".repeat(BOX_WIDTH - 2) }┘${ RESET }
 
 process.stdout.write("");
 process.stdout.write(`${YELLOW}Please submit any feature requests and bug reports @ https://github.com/serial-committer/Kinetic-SQL--Issue-Tracker/issues ${RESET}`);
+
+try {
+    const logPath = path.join(process.cwd(), 'kinetic-install.log');
+    fs.writeFileSync(logPath, 'Kinetic SQL Post-install Ran Successfully! 🚀\n');
+} catch (e) {
+    // ignore errors
+}
