@@ -10,7 +10,7 @@
     "prepublishOnly": "npm run build",
     "dev": "tsup --watch",
     "gen": "node dist/cli/generate.cjs",
-    "postinstall": "node scripts/postinstall.js"
+    "postinstall": "node scripts/postinstall.js || exit 0"
   },
   "exports": {
     ".": {

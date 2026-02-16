@@ -29,34 +29,34 @@ ${ CYAN }${ BOLD }
 ${ RESET }
 ${ GREEN }${ BRIGHT }✨  SQL Real-Time Engine Installed! 🚀${ RESET }`;
 
-console.log(banner);
+process.stdout.write(banner);
 
-/* console.log(`${ GREEN }${ BRIGHT } Package successfully Installed ✨${ RESET }\n`); */
-console.log("")
-console.log(`${ BRIGHT_YELLOW }📚  Refer to the Package Manger for docs & examples:${ RESET } https://www.npmjs.com/package/kinetic-sql`);
-console.log("")
+/* process.stdout.write(`${ GREEN }${ BRIGHT } Package successfully Installed ✨${ RESET }\n`); */
+process.stdout.write("")
+process.stdout.write(`${ BRIGHT_YELLOW }📚  Refer to the Package Manger for docs & examples:${ RESET } https://www.npmjs.com/package/kinetic-sql`);
+process.stdout.write("")
 
-console.log(`ℹ️ ${ RED } Please don't forget to run ${RESET}${BRIGHT_WHITE_ONLY}${ITALIC}npx k-sql gen${RESET_ITALIC}${RED} to enable auto-complete and type-safety!`)
-console.log(`${ CYAN }# PostgreSQL (Default)${ RESET }`);
-console.log(`  ${ ITALIC }npx k-sql gen --connection "{CONNECTION_URL}"${ RESET }`);
-console.log(`  ${ ITALIC }OR${ RESET }`);
-console.log(`  ${ ITALIC }npx k-sql gen --type pg --host localhost --user postgres --db mydb${ RESET }\n`);
+process.stdout.write(`ℹ️ ${ RED } Please don't forget to run ${RESET}${BRIGHT_WHITE_ONLY}${ITALIC}npx k-sql gen${RESET_ITALIC}${RED} to enable auto-complete and type-safety!`)
+process.stdout.write(`${ CYAN }# PostgreSQL (Default)${ RESET }`);
+process.stdout.write(`  ${ ITALIC }npx k-sql gen --connection "{CONNECTION_URL}"${ RESET }`);
+process.stdout.write(`  ${ ITALIC }OR${ RESET }`);
+process.stdout.write(`  ${ ITALIC }npx k-sql gen --type pg --host localhost --user postgres --db mydb${ RESET }\n`);
 
-console.log(`${ CYAN }# MySQL${ RESET }`);
-console.log(`  ${ ITALIC }npx k-sql gen --type mysql --host localhost --user root --db mydb${ RESET }\n`);
+process.stdout.write(`${ CYAN }# MySQL${ RESET }`);
+process.stdout.write(`  ${ ITALIC }npx k-sql gen --type mysql --host localhost --user root --db mydb${ RESET }\n`);
 
-console.log(`${ CYAN }# SQLite${ RESET }`);
-console.log(`  ${ ITALIC }npx k-sql gen --type sqlite --db ./dev.db${ RESET }\n`);
+process.stdout.write(`${ CYAN }# SQLite${ RESET }`);
+process.stdout.write(`  ${ ITALIC }npx k-sql gen --type sqlite --db ./dev.db${ RESET }\n`);
 
 /*
-    console.log(`${ ITALIC }-----------------------------------------------------------${ RESET }`);
-    console.log(`${ CYAN }Thanks for installing Kinetic-SQL \x1b[33m\u26A1\x1b[0m ${ RESET }`);
-    console.log(`${ BRIGHT_WHITE }Please consider donating to our open collective to: ${ RESET }`);
-    console.log(`- help me maintain this package ${ RESET }`);
-    console.log(` ${ CYAN } AND ${ RESET }`);
-    console.log(`- other projects I am working on constantly to make life easier for the developers.${ RESET }`)
-    console.log(`${ MAGENTA }🍺  Donate: https://opencollective.com/kinetic-ai ${ RESET }`);
-    console.log(`${ ITALIC }-----------------------------------------------------------${ RESET }\n`);
+    process.stdout.write(`${ ITALIC }-----------------------------------------------------------${ RESET }`);
+    process.stdout.write(`${ CYAN }Thanks for installing Kinetic-SQL \x1b[33m\u26A1\x1b[0m ${ RESET }`);
+    process.stdout.write(`${ BRIGHT_WHITE }Please consider donating to our open collective to: ${ RESET }`);
+    process.stdout.write(`- help me maintain this package ${ RESET }`);
+    process.stdout.write(` ${ CYAN } AND ${ RESET }`);
+    process.stdout.write(`- other projects I am working on constantly to make life easier for the developers.${ RESET }`)
+    process.stdout.write(`${ MAGENTA }🍺  Donate: https://opencollective.com/kinetic-ai ${ RESET }`);
+    process.stdout.write(`${ ITALIC }-----------------------------------------------------------${ RESET }\n`);
 */
 
 
@@ -82,10 +82,10 @@ function logBoxLine(text, textColor = WHITE) {
     const currentWidth = getVisualWidth(text);
     const paddingCount = BOX_WIDTH - 4 - currentWidth;
     const padding = " ".repeat(Math.max(0, paddingCount));
-    console.log(`${ STYLE }│ ${ textColor }${ text }${ STYLE }${ padding } │${ RESET }`);
+    process.stdout.write(`${ STYLE }│ ${ textColor }${ text }${ STYLE }${ padding } │${ RESET }`);
 }
 
-console.log(`${ STYLE }┌${ "─".repeat(BOX_WIDTH - 2) }┐${ RESET }`);
+process.stdout.write(`${ STYLE }┌${ "─".repeat(BOX_WIDTH - 2) }┐${ RESET }`);
 logBoxLine(``);
 logBoxLine(`Thanks for installing Kinetic-SQL ❤️  ✨ `, CYAN);
 logBoxLine(``);
@@ -96,7 +96,7 @@ logBoxLine(`-other projects I am working on constantly`, DIM_WHITE);
 logBoxLine(``);
 logBoxLine(`🍺  Donate: https://opencollective.com/kinetic-ai`, MAGENTA);
 logBoxLine(``);
-console.log(`${ STYLE }└${ "─".repeat(BOX_WIDTH - 2) }┘${ RESET }`);
+process.stdout.write(`${ STYLE }└${ "─".repeat(BOX_WIDTH - 2) }┘${ RESET }`);
 
-console.log("");
-console.log(`${YELLOW}Please submit any feature requests and bug reports @ https://github.com/serial-committer/Kinetic-SQL--Issue-Tracker/issues ${RESET}`);
+process.stdout.write("");
+process.stdout.write(`${YELLOW}Please submit any feature requests and bug reports @ https://github.com/serial-committer/Kinetic-SQL--Issue-Tracker/issues ${RESET}`);
