@@ -16,8 +16,7 @@ const BRIGHT_WHITE = "\x1b[97m\x1b[40m";
 const STYLE = "\x1b[38;2;5;200;120m\x1b[40m";
 const DIM_WHITE = "\x1b[38;2;192;192;192m\x1b[40m";
 
-// noinspection JSUnusedLocalSymbols
-const BRIGHT_YELLOW = "\x1b[93m";
+/* const BRIGHT_YELLOW = "\x1b[93m"; */
 
 export const MISSING_SCHEMA_ERROR = `
   ❌ ${RED}CRITICAL ERROR: Kinetic SQL Schema not found.${RESET}

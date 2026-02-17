@@ -4,6 +4,7 @@ import mysql from 'mysql2/promise';
 import Database from 'better-sqlite3';
 import fs from 'fs';
 import path from 'path';
+import {showBanner} from "../utils/constants.js";
 
 /*  -- TYPE MAPPINGS -- */
 const PG_TYPE_MAP: Record<string, string> = {
@@ -239,6 +240,13 @@ async function main() {
         console.log(`✅ Generated types at: ${outputPath}`);
         generateMarkerFile();
         console.log(`✅ Generated manifest at: ${manifestPath}`);
+
+        try {
+            showBanner();
+        } catch (e) {
+            console.info("⚠️ Banner generation failed, but required files generated ✔️");
+            console.info("---- 🚀 You can continue using Kinetic SQL ✨ ----");
+        }
 
     } catch (err) {
         console.error("❌ Generation failed:", err);
