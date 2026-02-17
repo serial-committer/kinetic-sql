@@ -4,9 +4,6 @@ import mysql from 'mysql2/promise';
 import Database from 'better-sqlite3';
 import fs from 'fs';
 import path from 'path';
-import {fileURLToPath} from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
 
 /*  -- TYPE MAPPINGS -- */
 const PG_TYPE_MAP: Record<string, string> = {
@@ -133,7 +130,7 @@ async function generateMysql(config: any) {
 
         return {columns, functions: routines, typeMap: MYSQL_TYPE_MAP};
     } finally {
-        await conn.end();
+        conn.end();
     }
 }
 
@@ -173,6 +170,16 @@ async function generateSqlite(config: any) {
     } finally {
         db.close();
     }
+}
+
+function generateMarkerFile() {
+    const schemaDir = path.resolve(process.cwd(), 'kinetic-schema');
+    if (!fs.existsSync(schemaDir)) fs.mkdirSync(schemaDir, {recursive: true});
+
+    fs.writeFileSync(
+        path.join(schemaDir, 'manifest.json'),
+        JSON.stringify({generatedAt: new Date().toISOString(), version: '1.0.0'})
+    );
 }
 
 /*  -- MAIN -- */
@@ -223,12 +230,15 @@ async function main() {
 
         const projectRoot = findProjectRoot(process.cwd());
         const outputPath = path.resolve(projectRoot, 'kinetic-schema', 'kinetic-env.d.ts');
+        const manifestPath = path.resolve(projectRoot, 'kinetic-schema', 'manifest.json');
 
         const dir = path.dirname(outputPath);
         if (!fs.existsSync(dir)) fs.mkdirSync(dir, {recursive: true});
 
         fs.writeFileSync(outputPath, content);
         console.log(`✅ Generated types at: ${outputPath}`);
+        generateMarkerFile();
+        console.log(`✅ Generated manifest at: ${manifestPath}`);
 
     } catch (err) {
         console.error("❌ Generation failed:", err);
@@ -236,4 +246,4 @@ async function main() {
     }
 }
 
-main().then(() => console.log(`Auto-complete types generated successfully ✨`));
+main().then(() => console.log(`Setup completed successfully ✨`));
