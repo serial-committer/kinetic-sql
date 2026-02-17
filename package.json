@@ -9,8 +9,7 @@
     "build": "tsup",
     "prepublishOnly": "npm run build",
     "dev": "tsup --watch",
-    "gen": "node dist/cli/generate.cjs",
-    "postinstall": "node scripts/postinstall.js || exit 0"
+    "gen": "node dist/cli/generate.cjs"
   },
   "exports": {
     ".": {
@@ -36,7 +35,6 @@
   },
   "files": [
     "dist",
-    "scripts",
     "README.md",
     "LICENSE"
   ],
