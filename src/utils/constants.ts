@@ -61,17 +61,20 @@ const logBoxLine = (text: string, textColor = WHITE) => {
 }
 
 export const showBanner = () => {
+    console.log('');
     console.log(`${STYLE}┌${"─".repeat(BOX_WIDTH - 2)}┐${RESET}`);
-    logBoxLine(``);
+    // logBoxLine(``);
     logBoxLine(`Thanks for installing Kinetic-SQL ❤️  ✨ `, CYAN);
-    logBoxLine(``);
-    logBoxLine(`Please consider donating to our open collective to:`, BRIGHT_WHITE);
-    logBoxLine(`-help me maintain this package`, DIM_WHITE);
-    logBoxLine(` &`, CYAN);
-    logBoxLine(`-other projects I am working on constantly`, DIM_WHITE);
-    logBoxLine(``);
-    logBoxLine(`🍺  Donate: https://opencollective.com/kinetic-ai`, MAGENTA);
-    logBoxLine(``);
+    // logBoxLine(``);
+    // logBoxLine(`Please consider donating to our open collective to:`, BRIGHT_WHITE);
+    // logBoxLine(`-help me maintain this package`, DIM_WHITE);
+    // logBoxLine(` &`, CYAN);
+    // logBoxLine(`-other projects I am working on constantly`, DIM_WHITE);
+    // logBoxLine(``);
+    // logBoxLine(`Donate: https://opencollective.com/kinetic-ai`, MAGENTA);
+    // logBoxLine(``);
+    // logBoxLine(`CHEERS! 🍺`, CYAN);
+    // logBoxLine(``);
     console.log(`${STYLE}└${"─".repeat(BOX_WIDTH - 2)}┘${RESET}`);
     console.log("");
     console.log(`${YELLOW}Please submit any feature requests and bug reports @ https://github.com/serial-committer/Kinetic-SQL--Issue-Tracker/issues ${RESET}`);
