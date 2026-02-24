@@ -7,14 +7,16 @@ Kinetic SQL is a next-gen Node.js client that wraps **PostgreSQL**, **MySQL** & 
 
 ---
 
-## ✨ Features
+## 📜 Features
 
 Kinetic SQL turns your database into a reactive extension of your code.
-- **🔮 RPC Wrapper:** Call Stored Procedures and define Native JS functions as if they were local methods.
+- **✨ RPC Wrapper:** Call your stored procedures and database functions just like native JavaScript methods.
 - **⚡ Real-Time Subscriptions:** Listen to `INSERT`, `UPDATE`, and `DELETE` events instantly.
-- **🔌 NestJS Native:** Drop-in `KineticModule` for zero-config integration.
+- **🌍 Universal Fit:** Built for `Express`, `Fastify`, and `Vanilla JS`, with a dedicated module for seamless NestJS integration out of the box.
+- **🚀 NestJS Native:** Drop-in `KineticModule` for zero-config integration with NestJS Framework.
+- **🤖 Automatic Type Generation:** It reads your schema and auto-generates type safety. You never have to manually write a TypeScript interface again.
 - **🛡️ Type Safety:** Full TypeScript support for schemas and configurations.
-- **🔌 Connection Pooling:** Built-in management for high-scale apps.
+- **♻️️ Connection Pooling:** Built-in management for high-scale apps.
 
 ---
 
@@ -206,7 +208,7 @@ realtimeEnabled: true // Requires Binary Logging enabled on server
 ```typescript
 const db = await KineticClient.create({
   type: 'sqlite',
-  filename: './prisma/dev.db' // Path to your file
+  filename: './dev.db' // Path to your file
 });
 ```
 
