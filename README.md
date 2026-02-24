@@ -212,6 +212,11 @@ const db = await KineticClient.create({
 });
 ```
 
+### MSSQL
+```
+Support for MSSQL is currently in developent. Will be released soon 😊
+```
+
 ## ⚠️ Requirements
 
 - **Node.js:** 18+
