@@ -70,7 +70,7 @@ const db = await KineticClient.create({
 });
 ```
 
-### 3. <u>Generate Types (The Magic)</u>
+### 3. <u>Generate Types</u> (The Magic)
 
 Run this command in your terminal. It reads your DB and patches the library automatically.
 
