@@ -1,22 +1,37 @@
 # ⚡ Kinetic SQL
 
->**The Type-Safe, Real-Time SQL Client for Node.js. The "Tailwind" of Database Clients.**
-## Zero Config. Full Autocomplete. Realtime by default.
+>**A lightweight, type-safe, real-time SQL Engine for Node.js. The "Tailwind" of Database Clients.**
 
-Kinetic SQL is a next-gen Node.js client that wraps **PostgreSQL**, **MySQL** & **SQLite** with a developer experience similar to Supabase, but for your own backend.
+<br/>
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![NPM Version](https://img.shields.io/npm/v/kinetic-sql.svg)](https://www.npmjs.com/package/kinetic-sql)
+[![GitHub Repo](https://img.shields.io/badge/GitHub-Repository-blue.svg)](https://github.com/serial-committer/kinetic-sql)
+
+Kinetic SQL is a next-gen Node.js client that wraps **PostgreSQL**, **MySQL** & **SQLite** with features that enable the developer to interact with databases seamlessly.
+
+🚀 **[Experience the Live Demo: Real-Time Stock Simulator](https://live-stock-simulator.vercel.app/)**
 
 ---
 
-## 📜 Features
+## 📜 <u>Features</u>
 
 Kinetic SQL turns your database into a reactive extension of your code.
 - **✨ RPC Wrapper:** Call your stored procedures and database functions just like native JavaScript methods.
 - **⚡ Real-Time Subscriptions:** Listen to `INSERT`, `UPDATE`, and `DELETE` events instantly.
-- **🌍 Universal Fit:** Built for `Express`, `Fastify`, and `Vanilla JS`, with a dedicated module for seamless NestJS integration out of the box.
+- **🌍 Universal Fit:** Built for `Express`, `Fastify`, and `Vanilla JS`, with a dedicated module for seamless `NestJS` integration out of the box.
 - **🚀 NestJS Native:** Drop-in `KineticModule` for zero-config integration with NestJS Framework.
 - **🤖 Automatic Type Generation:** It reads your schema and auto-generates type safety. You never have to manually write a TypeScript interface again.
 - **🛡️ Type Safety:** Full TypeScript support for schemas and configurations.
 - **♻️️ Connection Pooling:** Built-in management for high-scale apps.
+
+---
+
+## 📈 The Proof: Live Demo
+
+To stress-test the real-time event mapping and zero-bloat architecture, we built a high-frequency **Live Stock Market Simulator**. It runs on a Vercel frontend and Render backend, handling hundreds of database ticks a minute with a 0-second cold start.
+
+👉 **[View the Live Stock Simulator](https://live-stock-simulator.vercel.app/)**
 
 ---
 
@@ -43,9 +58,9 @@ import { KineticClient } from 'kinetic-sql';
 /* PostgreSQL/MySQL Example */
 /* Connects using your DATABASE_URL env var by default */
 const db = await KineticClient.create({
-type: 'pg', // or 'mysql'
-connectionString: process.env.DATABASE_URL,
-realtimeEnabled: true
+  type: 'pg', // or 'mysql'
+  connectionString: process.env.DATABASE_URL,
+  realtimeEnabled: true
 });
 
 /* SQLite Example */
@@ -113,12 +128,13 @@ await sub.unsubscribe();
 
 ## 🧠 <u>RPC Wrapper: The Robust Magic Bridge</u> ✨
 
-### Extend SQL with JavaScript `OR` Call stored procedures as native JS methods bridging the gap between your Backend and the Database.
+#### Extend SQL with JavaScript `OR` Call stored procedures as native JS methods bridging the gap between your Backend and the Database.
 
-#### <u>EXAMPLES:</u>
-**&nbsp;<u>Extend SQL with JavaScript</u>:**
-Why write complex SQL logic when you can just write JavaScript? Define a function in your Node.js app and call it *inside* your SQL queries. 😊
 
+**<u>Extend SQL with JavaScript</u>:**
+Why write complex SQL logic when you can just write JavaScript? Define a function in your Node.js app and call it ***inside*** your SQL queries. 😊
+
+#### &nbsp;&nbsp;Example:
 ```typescript
 /* Define a function in your app */
 client.raw.function('calculate_tax', (price, taxRate) => {
@@ -139,7 +155,7 @@ console.log(result);
 ```
 <br/>
 
-**&nbsp;<u>Call Stored Procedures</u>:**
+**<u>Call Stored Procedures</u>:**
 Invoke complex database logic without writing raw SQL strings (Using Postgres for the examples below) ✨
 
 #### &nbsp;&nbsp;Example 1:
@@ -214,7 +230,7 @@ const db = await KineticClient.create({
 
 ### MSSQL
 ```
-Support for MSSQL is currently in developent. Will be released soon 😊
+Support for MSSQL is currently in developent and will be released soon 😊
 ```
 
 ## ⚠️ Requirements
@@ -226,4 +242,12 @@ Support for MSSQL is currently in developent. Will be released soon 😊
 
 ## 📄 License
 
-MIT
+- #### MIT – See [LICENSE](https://github.com/serial-committer/kinetic-sql/blob/main/LICENSE) for details.
+
+## 🐞 Bugs, Issues, and Feature Requests
+
+Kinetic SQL is actively maintained. If you run into any issues, have feature requests, please feel free to open an issue on the GitHub repo:
+
+👉 **[Kinetic SQL Feature Requests & Issue Tracker](https://github.com/serial-committer/kinetic-sql/issues)**
+
+If you found this library helpful in escaping ORM bloat, a ⭐️ on the repository is greatly appreciated!
