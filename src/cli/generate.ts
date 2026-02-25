@@ -121,7 +121,7 @@ async function generateMysql(config: any) {
             ORDER BY TABLE_NAME, ORDINAL_POSITION`,
             [config.db]);
 
-        /*  MySQL Procedures (Simple version: we just get names for now) */
+        /*  MySQL Procedures (Simple version: get names - will be upgraded in future releases) */
         const [routines]: any = await conn.execute(`
             SELECT ROUTINE_NAME as function_name
             FROM INFORMATION_SCHEMA.ROUTINES
@@ -136,7 +136,7 @@ async function generateMysql(config: any) {
 }
 
 async function generateSqlite(config: any) {
-    // 1. Resolve DB path (support --db, --filename, or --connection)
+    // Resolve DB path (support --db, --filename, or --connection)
     const dbPath = config.db || config.filename || config.connection;
     if (!dbPath) {
         throw new Error('❌ Missing SQLite file path. Usage: k-sql gen --type=sqlite --db=./dev.db');
@@ -145,12 +145,12 @@ async function generateSqlite(config: any) {
     const db = new Database(dbPath, {readonly: true});
 
     try {
-        // 2. Get Tables
+        // Get Tables
         const tables: any[] = db.prepare(`SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'`).all();
 
         const allColumns = [];
 
-        // 3. Loop tables and get columns via PRAGMA
+        // Loop tables and get columns via PRAGMA
         for (const tbl of tables) {
             const tableInfo: any[] = db.prepare(`PRAGMA table_info('${tbl.name}')`).all();
 
@@ -207,7 +207,7 @@ async function main() {
             /*  Special handling for MySQL tinyint(1) -> boolean */
             let tsType = typeMap[col.udt_name] || 'any';
             if (args.type === 'mysql' && col.udt_name === 'tinyint') {
-                /* In MySQL, tinyint is often used as boolean, but we can default to number to be safe */
+                /* In MySQL, tinyint is used as boolean, default to number to be safe */
                 tsType = 'number';
             }
 

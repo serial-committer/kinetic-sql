@@ -14,11 +14,11 @@ export class PostgresDriver implements IDriver {
         this.config = config;
         this.realtimeEnabled = config.realtimeEnabled || false;
 
-        /* 1. Initialize Main Connection Pool */
+        /* Initializing Main Connection Pool */
         if (typeof config.connectionString === 'string') {
             this.sql = postgres(config.connectionString, {max: config.poolSize || 10});
         } else {
-            /* Remove 'type' and internal flags before passing to postgres.js to avoid "unknown option" warnings */
+            /* Removing 'type' and internal flags before passing to postgres.js to avoid "unknown option" warnings */
             const {type, realtimeEnabled, poolSize, ...pgOptions} = config;
             this.sql = postgres({ ...pgOptions, max: poolSize || 10 });
         }
@@ -80,7 +80,7 @@ export class PostgresDriver implements IDriver {
             throw new KineticError('CONFIG_ERROR', "Realtime is disabled in config.");
         }
 
-        /* 1. Ensure the specific table trigger exists */
+        /* Ensure the specific table trigger exists */
         try {
             await this.sql.unsafe(createTriggerSql(tableName));
             this.logger.info(`Table: ${tableName} configured for broadcasting changes in realtime 🔔`);
@@ -89,8 +89,8 @@ export class PostgresDriver implements IDriver {
         }
 
         /**
-         * 2. Create a DEDICATED connection for listening
-         * We must clone the config but force max: 1 because listeners block the connection
+         * Create a DEDICATED connection for listening
+         * Clone the config but force max: 1 because listeners block the connection
          */
         let listener: postgres.Sql;
 
@@ -104,8 +104,9 @@ export class PostgresDriver implements IDriver {
             });
         }
 
-        /** 3. Start Listening
-         * We don't await this because .listen() keeps the promise open forever. We just start it and return the unsubscribed handle
+        /**
+         * Start Listening
+         * Don't await this - .listen() keeps the promise open forever. Start and return the unsubscribed handle
          */
         listener.listen('table_events', (payload) => {
             const event = JSON.parse(payload);

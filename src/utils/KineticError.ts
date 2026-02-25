@@ -16,7 +16,7 @@ export class KineticError extends Error {
         this.code = code;
         this.details = originalError;
 
-        // Fix for extending built-in Error class in TypeScript
+        /* Fix for extending built-in Error class in TypeScript */
         Object.setPrototypeOf(this, KineticError.prototype);
     }
 }

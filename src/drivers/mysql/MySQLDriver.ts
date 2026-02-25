@@ -54,13 +54,13 @@ export class MysqlDriver implements IDriver {
         await this.instance.start();
 
         /* We listen to everything (`*`) within this DB */
-        /* Why? Because the MySQL Binlog sends us the whole stream (Filtering in JS is faster than restarting the watcher)*/
+        /* MySQL Binlog sends us the whole stream (Filtering in JS is faster than restarting the watcher) */
         this.instance.addTrigger({
             name: 'KINETIC_EVENTS',
             expression: '*',
             statement: MySQLEvents.STATEMENTS.ALL,
             onEvent: (event: any) => {
-                /* Security: Ensure the event belongs to our database */
+                /* Security: Ensure the event belongs to the database */
                 if (event.schema !== this.config.database) return;
 
                 /* Route to subscriber*/

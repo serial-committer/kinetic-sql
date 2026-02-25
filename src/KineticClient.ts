@@ -6,17 +6,17 @@ import {PostgresDriver} from './drivers/postgres/PostgresDriver.js';
 
 /*--- TYPE SYSTEM RE-CONNECTION --*/
 
-/* 1. Global Registry (The "Slot" for the generator) */
+/* Global Registry (The "Slot" for the generator) */
 export interface Register {
 }
 
-/* 2. Base Schema */
+/* Base Schema */
 export interface KineticSchema {
     tables: Record<string, any>;
     functions: Record<string, { args: any; returns: any }>;
 }
 
-/* 3. The Magic Resolver */
+/* The Magic Resolver */
 export type ResolvedDB = Register extends { schema: infer S } ? S : KineticSchema;
 
 /* The Flexible Config */
@@ -37,7 +37,7 @@ export type KineticConfig = |
         type: 'sqlite'; debug?: boolean; connectionString?: string; filename?: string; options?: any
     };
 
-/* 4. Default the Generic to ResolvedDB */
+/* Default the Generic to ResolvedDB */
 export class KineticClient<Schema extends KineticSchema = ResolvedDB> {
     private readonly driver: IDriver;
 

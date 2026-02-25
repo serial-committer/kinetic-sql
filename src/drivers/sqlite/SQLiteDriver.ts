@@ -8,7 +8,7 @@ export class SQLiteDriver implements IDriver {
     private subscribers: Map<string, Function[]> = new Map();
 
     constructor(config: any) {
-        /* 1. Handle Connection String (sqlite://file.db) or Config Object */
+        /* Handle Connection String (sqlite://file.db) or Config Object */
         let filename = ':memory:';
         if (typeof config.connectionString === 'string') {
             filename = config.connectionString.replace(/^sqlite:\/\//, '');
@@ -29,8 +29,8 @@ export class SQLiteDriver implements IDriver {
 
     async init() {
         /**
-         * 2. REGISTER THE BRIDGE
-         * This allows SQL Triggers to call back into our Node.js process.
+         * REGISTER THE BRIDGE
+         * Required for SQL Triggers to call back into the Node.js process.
          */
         this.db.function('kinetic_bridge', (table: string, action: string, rowid: number | bigint) => {
             this.handleEvent(table, action, rowid);
@@ -39,7 +39,7 @@ export class SQLiteDriver implements IDriver {
     }
 
     /**
-     * 3. INTERNAL EVENT HANDLER
+     * INTERNAL EVENT HANDLER
      * Fetches the full row data to mimic Postgres "payload" behavior.
      */
     private handleEvent(table: string, action: string, rowid: number | bigint) {
@@ -58,12 +58,12 @@ export class SQLiteDriver implements IDriver {
                 return;
             }
 
-            /* In case of INSERT/UPDATE, we fetch the fresh row */
+            /* In case of INSERT/UPDATE, fetch the fresh row */
             setImmediate(() => {
                 this.logger.info(`🟢 Fetching fresh row for ${table} with rowid ${rowid}`);
                 try {
                     const row = this.db.prepare(`SELECT * FROM ${table} WHERE rowid = ?`).get(rowid);
-                    /* If a row was found (it wasn't deleted immediately after), emit it */
+                    /* If a row was found, emit it */
                     if (row) {
                         const payload = {action, data: row};
                         cbs.forEach(cb => cb(payload));
@@ -78,7 +78,7 @@ export class SQLiteDriver implements IDriver {
     }
 
     /**
-     * 4. REALTIME SUBSCRIPTION
+     * REALTIME SUBSCRIPTION
      * Dynamically attaches triggers to the requested table.
      */
     async subscribe(table: string, cb: (data: any) => void): Promise<{ unsubscribe: () => void }> {
@@ -124,7 +124,7 @@ export class SQLiteDriver implements IDriver {
     }
 
     /**
-     * 5. RPC (Stored Procedures)
+     * RPC (Stored Procedures)
      * Maps to a User Defined Function (UDF) call: SELECT funcName('?', '?')
      */
     async rpc(name: string, params: any): Promise<{ data: any; error: any }> {
