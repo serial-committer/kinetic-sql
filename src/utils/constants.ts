@@ -7,14 +7,14 @@ const WHITE = "\x1b[37m";
 const GREEN = "\x1b[32m";
 const YELLOW = "\x1b[33m";
 const CONSOLE = "\u203A_"
-const MAGENTA = "\x1b[35m";
+// const MAGENTA = "\x1b[35m";
 const RESET_ITALIC = "\x1b[23m";
 const RED = "\x1b[38;2;204;9;5m"
 const CYAN = "\x1b[38;2;0;149;238m";
 const BRIGHT_WHITE_ONLY = "\x1b[97m";
-const BRIGHT_WHITE = "\x1b[97m\x1b[40m";
+// const BRIGHT_WHITE = "\x1b[97m\x1b[40m";
 const STYLE = "\x1b[38;2;5;200;120m\x1b[40m";
-const DIM_WHITE = "\x1b[38;2;192;192;192m\x1b[40m";
+// const DIM_WHITE = "\x1b[38;2;192;192;192m\x1b[40m";
 
 /* const BRIGHT_YELLOW = "\x1b[93m"; */
 
@@ -40,16 +40,18 @@ export const MISSING_SCHEMA_ERROR = `
   For any issues with installation or usage: 
   ${RED}Please report them here: ${RESET}https://github.com/serial-committer/Kinetic-SQL--Documentation-and-Issue-Tracker/issues`;
 
+
 const getVisualWidth = (text: string) => {
-    const cleanText = text.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-m]/g, "");
+    // eslint-disable-next-line no-control-regex
+    const cleanText = text.replace(/[\u001b\u009b][[()#;?](?:[0-9]{1,4}(?:;[0-9]{0,4}))?[0-m]/g, "");
+    const segmenter = new Intl.Segmenter('en', {granularity: 'grapheme'});
+
     let width = 0;
-    for (const char of cleanText) {
-        if (char === '✨' || char === '❤️') {
-            width += 0;
-        } else {
-            width += 1;
-        }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    for (const _ of segmenter.segment(cleanText)) {
+        width += 1;
     }
+
     return width;
 }
 
@@ -77,5 +79,5 @@ export const showBanner = () => {
     // logBoxLine(``);
     console.log(`${STYLE}└${"─".repeat(BOX_WIDTH - 2)}┘${RESET}`);
     console.log("");
-    console.log(`${YELLOW}Please submit any feature requests and bug reports @ https://github.com/serial-committer/Kinetic-SQL--Issue-Tracker/issues ${RESET}`);
+    console.log(`${YELLOW}Please submit any feature requests and bug reports @ https://github.com/serial-committer/kinetic-sql/issues ${RESET}`);
 }

@@ -156,7 +156,7 @@ async function generateSqlite(config: any) {
 
             for (const col of tableInfo) {
                 // clean type (e.g. "VARCHAR(255)" -> "varchar")
-                let cleanType = (col.type || 'text').split('(')[0].toLowerCase().trim();
+                const cleanType = (col.type || 'text').split('(')[0].toLowerCase().trim();
 
                 allColumns.push({
                     table_name: tbl.name,
@@ -243,7 +243,7 @@ async function main() {
 
         try {
             showBanner();
-        } catch (e) {
+        } catch {
             console.info("⚠️ Banner generation failed, but required files generated ✔️");
             console.info("---- 🚀 You can continue using Kinetic SQL ✨ ----");
         }

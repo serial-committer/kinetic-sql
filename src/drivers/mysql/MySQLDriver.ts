@@ -26,7 +26,33 @@ export class MysqlDriver implements IDriver {
         this.logger = new KineticLogger(config.debug, 'Kinetic:MySQL');
     }
 
-    get raw() { return this.pool; }
+    async raw(sql: string, params: any[] = []): Promise<any> {
+        try {
+            const [rows] = await this.pool.execute(sql, params);
+            return rows;
+        } catch (err: any) {
+            this.logger.error(`Raw query failed: ${sql}`, err);
+            throw new KineticError('QUERY_FAILED', 'Failed to execute raw MySQL query', err);
+        }
+    }
+
+    public prepare(sql: string) {
+        return {
+            execute: async (params: any[] = []) => {
+                try {
+                    const [rows] = await this.pool.execute(sql, params);
+                    return rows;
+                } catch (err: any) {
+                    this.logger.error(`Prepared query failed: ${sql}`, err);
+                    throw new Error(`Failed to execute prepared MySQL query: ${err.message}`);
+                }
+            }
+        };
+    }
+
+    get native(): any {
+        return this.pool;
+    }
 
     async init() {
         /* Only start Binlog watcher if explicitly enabled */

@@ -9,7 +9,12 @@
     "build": "tsup",
     "prepublishOnly": "npm run build",
     "dev": "tsup --watch",
-    "gen": "node dist/cli/generate.cjs"
+    "gen": "node dist/cli/generate.cjs",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "coverage": "vitest run --coverage",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "exports": {
     ".": {
@@ -53,6 +58,7 @@
     "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^25.2.0",
     "@typescript-eslint/parser": "^8.54.0",
+    "@vitest/coverage-v8": "^4.0.18",
     "eslint": "^9.39.2",
     "eslint-config-next": "^16.1.6",
     "eslint-config-prettier": "^10.1.8",
@@ -62,7 +68,8 @@
     "ts-node": "^10.9.2",
     "tsup": "^8.5.1",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.54.0"
+    "typescript-eslint": "^8.54.0",
+    "vitest": "^4.0.18"
   },
   "keywords": [
     "postgres",

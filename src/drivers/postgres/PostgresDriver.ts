@@ -19,14 +19,32 @@ export class PostgresDriver implements IDriver {
             this.sql = postgres(config.connectionString, {max: config.poolSize || 10});
         } else {
             /* Removing 'type' and internal flags before passing to postgres.js to avoid "unknown option" warnings */
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const {type, realtimeEnabled, poolSize, ...pgOptions} = config;
             this.sql = postgres({ ...pgOptions, max: poolSize || 10 });
         }
         this.logger = new KineticLogger(config.debug, 'Kinetic:Postgres');
     }
 
-    get raw(): any {
-        return this.sql;
+    public async raw(sql: string, params: any[] = []): Promise<any> {
+        try {
+            return await this.sql.unsafe(sql, params);
+        } catch (err: any) {
+            this.logger.error(`Raw query failed: ${sql}`, err);
+            throw new KineticError('QUERY_FAILED', 'Failed to execute raw Postgres query', err);
+        }
+    }
+
+    public prepare(sql: string) {
+        return {
+            execute: async (params: any[] = []) => {
+                return this.sql.unsafe(sql, params);
+            }
+        };
+    }
+
+    public get native(): any {
+        return this.sql
     }
 
     async init() {
@@ -97,6 +115,7 @@ export class PostgresDriver implements IDriver {
         if (typeof this.config.connectionString === 'string') {
             listener = postgres(this.config.connectionString, {max: 1});
         } else {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const {type, realtimeEnabled, poolSize, ...pgOptions} = this.config;
             listener = postgres({
                 ...pgOptions,

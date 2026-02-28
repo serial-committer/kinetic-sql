@@ -7,5 +7,9 @@ export interface IDriver {
 
     end(): Promise<void>;
 
-    raw: any;
+    raw(sql: string, params?: any[]): Promise<any>;
+
+    readonly native: any;
+
+    prepare(sql: string): { execute: (params?: any[]) => Promise<any> };
 }

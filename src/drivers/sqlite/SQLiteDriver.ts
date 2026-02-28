@@ -1,11 +1,12 @@
 import Database from 'better-sqlite3';
 import type {IDriver} from '../DriverInterface.js';
 import {KineticLogger} from "../../utils/KineticLogger.js";
+import {KineticError} from "../../utils/KineticError.js";
 
 export class SQLiteDriver implements IDriver {
     private logger: KineticLogger;
     public db: Database.Database;
-    private subscribers: Map<string, Function[]> = new Map();
+    private subscribers: Map<string, ((payload: any) => void)[]> = new Map();
 
     constructor(config: any) {
         /* Handle Connection String (sqlite://file.db) or Config Object */
@@ -23,8 +24,32 @@ export class SQLiteDriver implements IDriver {
         this.db = new Database(filename, config.options || {});
     }
 
-    get raw(): any {
-        return this.db;
+    public async raw(sql: string, params: any[] = []): Promise<any> {
+        try {
+            const stmt = this.db.prepare(sql);
+            if (stmt.reader) {
+                return stmt.all(...params);
+            } else {
+                return stmt.run(...params);
+            }
+        } catch (err: any) {
+            this.logger.error(`Raw query failed: ${sql}`, err);
+            throw new KineticError('QUERY_FAILED', 'Failed to execute raw SQLite query', err);
+        }
+    }
+
+    public prepare(sql: string) {
+        const stmt = this.db.prepare(sql);
+        return {
+            execute: async (params: any[] = []) => {
+                if (stmt.reader) return stmt.all(...params);
+                return stmt.run(...params);
+            }
+        };
+    }
+
+    public get native(): any {
+        return this.db
     }
 
     async init() {
@@ -43,7 +68,7 @@ export class SQLiteDriver implements IDriver {
      * Fetches the full row data to mimic Postgres "payload" behavior.
      */
     private handleEvent(table: string, action: string, rowid: number | bigint) {
-        this.logger.info('🟢 Bridge called for:', table, action, rowid);
+        this.logger.info('⚡ Bridge called for:', table, action, rowid);
         const cbs = this.subscribers.get(table);
         if (!cbs || cbs.length === 0) {
             this.logger.warn(`🔴 No subscribers for table ${table}`);
@@ -60,7 +85,7 @@ export class SQLiteDriver implements IDriver {
 
             /* In case of INSERT/UPDATE, fetch the fresh row */
             setImmediate(() => {
-                this.logger.info(`🟢 Fetching fresh row for ${table} with rowid ${rowid}`);
+                /* this.logger.info(`🟢 Fetching fresh row for ${table} with rowid ${rowid}`); */
                 try {
                     const row = this.db.prepare(`SELECT * FROM ${table} WHERE rowid = ?`).get(rowid);
                     /* If a row was found, emit it */
