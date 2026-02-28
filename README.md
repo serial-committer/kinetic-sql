@@ -14,15 +14,7 @@ Kinetic SQL is a next-gen Node.js client that wraps **PostgreSQL**, **MySQL** & 
 
 ---
 
-<br/>
-
-<span style="background-color: #0095ED; color: #eeeeee; font-size: 1.8em; padding: 3px 0 4px 4px; border-top-left-radius: 7px; border-bottom-left-radius: 7px; font-weight: bold;">
-    📜
-</span>
-<span style="background-color: #0095ED; color: #eeeeee; font-size: 1.8em; padding: 3px 0 4px 2px; border-top-right-radius: 7px; border-bottom-right-radius: 7px; font-weight: bold;">
-    <span style="text-decoration: none;">Features</span>
-    <span style="text-decoration: none;">&nbsp;</span>
-</span>
+## 📜 <u>Features</u>
 
 Kinetic SQL turns your database into a reactive extension of your code.
 - **✨ RPC Wrapper:** Call your stored procedures and database functions just like native JavaScript methods.
@@ -36,15 +28,7 @@ Kinetic SQL turns your database into a reactive extension of your code.
 
 ---
 
-<br/>
-
-<span style="background-color: #0095ED; color: #eeeeee; font-size: 1.8em; padding: 3px 0 4px 4px; border-top-left-radius: 7px; border-bottom-left-radius: 7px; font-weight: bold;">
-    📈
-</span>
-<span style="background-color: #0095ED; color: #eeeeee; font-size: 1.8em; padding: 3px 0 4px 2px; border-top-right-radius: 7px; border-bottom-right-radius: 7px; font-weight: bold;">
-    <span style="text-decoration: none;">The Proof: Live Demo</span>
-    <span style="text-decoration: none;">&nbsp;</span>
-</span>
+## 📈 The Proof: Live Demo
 
 To stress-test the real-time event mapping and zero-bloat architecture, we built a high-frequency **Live Stock Market Simulator**. It runs on a Vercel frontend and Render backend, handling hundreds of database ticks a minute with a 0-second cold start.
 
@@ -54,11 +38,7 @@ To stress-test the real-time event mapping and zero-bloat architecture, we built
 
 ## 🚀 Quick Start
 
-<span style="background-color: #0095ED; color: #eeeeee; font-size: 1.4em; padding: 3px 0 4px 1px; border-radius: 7px; font-weight: bold;">
-    <span style="text-decoration: none;">&nbsp;</span>    
-    <span>1. <u>Install</u></span>
-    <span style="text-decoration: none;">&nbsp;&nbsp;</span>
-</span>
+### 1. <u>Install</u>
 
 ```bash
 # For PostgreSQL:
@@ -71,13 +51,7 @@ npm install kinetic-sql drizzle-orm mysql2 @rodrigogs/mysql-events
 npm install kinetic-sql better-sqlite3
 ```
 
-<br/>
-
-<span style="background-color: #0095ED; color: #eeeeee; font-size: 1.4em; padding: 3px 0 4px 1px; border-radius: 7px; font-weight: bold;">
-    <span style="text-decoration: none;">&nbsp;</span>    
-    <span>2. <u>Initialize</u></span>
-    <span style="text-decoration: none;">&nbsp;&nbsp;</span>
-</span>
+### 2. <u>Initialize</u>
 
 ```typescript
 import { KineticClient } from 'kinetic-sql';
@@ -96,13 +70,8 @@ const client = await KineticClient.create({
   filename: './dev.db'
 });
 ```
-<br/>
 
-<span style="background-color: #0095ED; color: #eeeeee; font-size: 1.4em; padding: 3px 0 4px 1px; border-radius: 7px; font-weight: bold;">
-    <span style="text-decoration: none;">&nbsp;</span>    
-    <span>3. <u>Generate Types</u> (The Magic)</span>
-    <span style="text-decoration: none;">&nbsp;</span>
-</span>
+### 3. <u>Generate Types</u> (The Magic)
 
 Run this command in your terminal. It reads your DB and patches the library automatically.
 
@@ -123,13 +92,7 @@ npx k-sql gen --type sqlite --db ./dev.db
 
 ## 📚 <u>Usage</u>
 
-<span style="background-color: #0095ED; color: #eeeeee; font-size: 1.4em; padding: 3px 0 4px 4px; border-top-left-radius: 7px; border-bottom-left-radius: 7px; font-weight: bold;">
-    &nbsp;🚀
-</span>
-<span style="background-color: #0095ED; color: #eeeeee; font-size: 1.4em; padding: 3px 0 4px 2px; border-top-right-radius: 7px; border-bottom-right-radius: 7px; font-weight: bold;">
-    <span style="text-decoration: underline;">NestJS Integration</span>
-    <span style="text-decoration: none;">&nbsp;&nbsp;</span>
-</span>
+## 🚀 <u>NestJS Integration</u>
 
 Kinetic SQL exports a native NestJS module for zero-config setup. Using the library in your NestJS app is as simple as:
 
@@ -151,13 +114,7 @@ export class AppModule {}
 ```
 ---
 
-<span style="background-color: #0095ED; color: #eeeeee; font-size: 1.4em; padding: 3px 0 4px 4px; border-top-left-radius: 7px; border-bottom-left-radius: 7px; font-weight: bold;">
-    ⏱️
-</span>
-<span style="background-color: #0095ED; color: #eeeeee; font-size: 1.4em; padding: 3px 0 4px 2px; border-top-right-radius: 7px; border-bottom-right-radius: 7px; font-weight: bold;">
-    <span style="text-decoration: underline;">Realtime Subscriptions</span>
-    <span style="text-decoration: none;">&nbsp;&nbsp;</span>
-</span>
+## ⚡<u>Realtime Subscriptions</u>
 
 Listen to database events without setting up WebSockets. 
 
@@ -176,29 +133,14 @@ await sub.unsubscribe();
 
 ---
 
-<br/>
+## ✨ <u>RPC Wrapper: The Robust Magic Bridge</u>
 
-<span style="background-color: #0095ED; color: #eeeeee; font-size: 1.4em; padding: 3px 0 4px 4px; border-top-left-radius: 7px; border-bottom-left-radius: 7px; font-weight: bold;">
-    &nbsp;✨
-</span>
-<span style="background-color: #0095ED; color: #eeeeee; font-size: 1.4em; padding: 3px 0 4px 2px; border-top-right-radius: 7px; border-bottom-right-radius: 7px; font-weight: bold;">
-    <span style="text-decoration: underline;">RPC Wrapper: The Robust Magic Bridge</span>
-    <span style="text-decoration: none;">&nbsp;&nbsp;</span>
-</span>
+#### Extend SQL with JavaScript `OR` Call stored procedures as native JS methods bridging the gap between your Backend and the Database.
 
-Extend SQL with JavaScript `OR` Call stored procedures as native JS methods bridging the gap between your Backend and the Database.
+**<u>Extend SQL with JavaScript</u>:**
+Why write complex SQL logic when you can just write JavaScript? Define a function in your Node.js app and call it ***inside*** your SQL queries. 😊
 
-
-<span style="background-color: #0095ED; color: #eeeeee; font-size: 1.4em; padding: 3px 9px 4px 9px; border-radius: 7px; font-weight: bold;">
-    <span>Extend SQL with JavaScript</span>
-</span>
-
-Why write complex SQL logic when you can just write JavaScript? Define a function in your Node.js app and call it inside your SQL queries. 😊
-
-<span style="background-color: #0095ED; color: #eeeeee; font-size: 1.1em; padding: 2px 9px 4px 9px; border-radius: 7px; font-weight: bold;">
-    <span style="text-decoration: underline;">Example</span>
-    <span style="text-decoration: none;">:</span>
-</span>
+#### &nbsp;&nbsp;Example:
 
 ```typescript
 /* Define a function in your app */
@@ -220,16 +162,9 @@ console.log(result);
 ```
 <br/>
 
-<span style="background-color: #0095ED; color: #eeeeee; font-size: 1.4em; padding: 3px 9px 4px 9px; border-radius: 7px; font-weight: bold;">
-    <span>Call Stored Procedures</span>
-</span>
+**<u>Call Stored Procedures</u>:** Invoke complex database logic without writing raw SQL strings (Using Postgres for the examples below) ✨
 
-Invoke complex database logic without writing raw SQL strings (Using Postgres for the examples below) ✨
-
-<span style="background-color: #0095ED; color: #eeeeee; font-size: 1.1em; padding: 2px 9px 4px 9px; border-radius: 7px; font-weight: bold;">
-    <span style="text-decoration: underline;">Example 1</span>
-    <span style="text-decoration: none;">:</span>
-</span>
+#### &nbsp;&nbsp;Example 1:
 
 ```typescript
 /* Calls the 'create_user' stored procedure safely along with auto-completion and type-safety! */
@@ -239,10 +174,7 @@ const { data, error } = await client.rpc('create_user', {
 });
 ```
 
-<span style="background-color: #0095ED; color: #eeeeee; font-size: 1.1em; padding: 2px 9px 4px 9px; border-radius: 7px; font-weight: bold;">
-    <span style="text-decoration: underline;">Example 2</span>
-    <span style="text-decoration: none;">:</span>
-</span>
+#### &nbsp;&nbsp;Example 2:
 
 ```typescript
 /* Calls the stored procedure 'add_todo' (Auto-completed!) */
@@ -256,19 +188,10 @@ const { data, error } = await client.rpc('add_todo',
 
 ## <u>Plugins: Middleware API</u> 🔌
 
-**Kinetic SQL** is engineered with a strict, lightweight core to guarantee `sub-4 ms` query latency. There are instances where developers might need to execute pre and post query logic. To keep the core engine blazingly fast, all non-essential features (like custom logging, APM tracing, or data masking) can be easily plugged into the core using the exposed hooks **OR** if that feature is required across multiple projects, you can also build your own **Official Plugins** using the 
-<span style="background-color: #0095ED; color: #eeeeee; font-size: 1.1em; padding: 1px 4px; border-radius: 4px; font-weight: bold;">
-Middleware API</span>
+**Kinetic SQL** is engineered with a strict, lightweight core to guarantee `sub-4 ms` query latency. There are instances where developers might need to execute pre and post query logic. To keep the core engine blazingly fast, all non-essential features (like custom logging, APM tracing, or data masking) can be easily plugged into the core using the exposed hooks **OR** if that feature is required across multiple projects, you can also build your own **Official Plugins** using the `Middleware API`.
 
-<br/>
 
-<span style="background-color: #0095ED; color: #eeeeee; font-size: 1.2em; padding: 3px 0 4px 0; border-top-left-radius: 7px; border-bottom-left-radius: 7px; font-weight: bold;">
-    <span style="text-decoration: none;">&nbsp;</span>    
-    <span style="text-decoration: underline;">Example: Building a Custom Logger Plugin</span>
-</span>
-<span style="background-color: #0095ED; color: #eeeeee; font-size: 1.2em; padding: 3px 0 4px 0; border-top-right-radius: 7px; border-bottom-right-radius: 7px; font-weight: bold;">
-    🔌
-</span>
+#### <u>Example: Building a Custom Logger Plugin</u>:
 
 Creating a plugin is as simple as defining a `KineticMiddleware` object that taps into the query lifecycle hooks.
 
@@ -295,15 +218,10 @@ export const PerformanceLogger: KineticMiddleware = {
   }
 };
 ````
+
 <br/>
 
-<span style="background-color: #0095ED; color: #eeeeee; font-size: 1.2em; padding: 3px 0 4px 0; border-top-left-radius: 7px; border-bottom-left-radius: 7px; font-weight: bold;">
-    <span style="text-decoration: none;">&nbsp;</span>    
-    <span style="text-decoration: underline;">HOW TO: Registering Middleware (Express/Vanilla Node)</span>
-</span>
-<span style="background-color: #0095ED; color: #eeeeee; font-size: 1.2em; padding: 3px 0 4px 0; border-top-right-radius: 7px; border-bottom-right-radius: 7px; font-weight: bold;">
-    ❓
-</span>
+#### <u>HOW TO: Registering Middleware (Express/Vanilla Node)</u> ❓:
 
 Chain the `.use()` method immediately after creating your client instance.
 ```typescript
@@ -321,16 +239,9 @@ client.use(PerformanceLogger);
 /* The plugin will now intercept all raw() and rpc() calls */
 await client.raw('SELECT * FROM users');
 ```
-
 <br/>
 
-<span style="background-color: #0095ED; color: #eeeeee; font-size: 1.2em; padding: 3px 0 4px 0; border-top-left-radius: 7px; border-bottom-left-radius: 7px; font-weight: bold;">
-    <span style="text-decoration: none;">&nbsp;</span>    
-    <span style="text-decoration: underline;">HOW TO: Registering Middleware (NestJS)</span>
-</span>
-<span style="background-color: #0095ED; color: #eeeeee; font-size: 1.2em; padding: 3px 0 4px 0; border-top-right-radius: 7px; border-bottom-right-radius: 7px; font-weight: bold;">
-    ❓
-</span>
+#### <u>HOW TO: Registering Middleware (NestJS)</u> ❓:
 
 If you are using the official KineticModule for NestJS, you can easily register your middleware plugins during the asynchronous module initialization.
 ```typescript
@@ -356,10 +267,7 @@ export class AppModule {
 ```
 ---
 
-<span style="background-color: #0095ED; color: #eeeeee; font-size: 1.4em; padding: 3px 0 4px 1px; border-radius: 7px; font-weight: bold;">
-    <span>⚡Executing Raw Queries</span>
-    <span style="text-decoration: none;">&nbsp;</span>
-</span>
+### <u>Executing Raw Queries</u> ⚡
 
 If you need to execute complex, custom SQL strings, use the `.raw()` method.  
 **Bonus:** All queries executed through `.raw()` automatically pass through your custom Middleware pipeline!
@@ -371,10 +279,7 @@ const users = await client.raw('SELECT * FROM users WHERE age > ?', [21]);
 
 ---
 
-<span style="background-color: #0095ED; color: #eeeeee; font-size: 1.4em; padding: 3px 0 4px 1px; border-radius: 7px; font-weight: bold;">
-    <span>&nbsp;🚀 Prepared Statements (Optimized & Tracked)</span>
-    <span style="text-decoration: none;">&nbsp;</span>
-</span>
+### <u>Prepared Statements (Optimized & Tracked)</u> 🚀
 
 When you need to execute the same query hundreds of times (like bulk inserts or high-frequency updates), parsing the SQL string on every call is a waste of CPU cycles.
 
@@ -393,12 +298,9 @@ await insertUser.execute(['Charlie', 22]);
 
 ---
 
-<span style="background-color: #0095ED; color: #eeeeee; font-size: 1.4em; padding: 3px 0 4px 1px; border-radius: 7px; font-weight: bold;">
-    <span>&nbsp;✨Standard Queries (via Drizzle)</span>
-    <span style="text-decoration: none;">&nbsp;</span>
-</span>
+### <u>Standard Queries (via Drizzle)</u> ✨
 
-Kinetic SQL is designed to work alongside your favorite query builders. If you need to hand off the connection to Drizzle ORM, simply use the `.native` escape hatch, which exposes the underlying database driver (`postgres.js`, `mysql2`, or `better-sqlite3`).
+Kinetic SQL is designed to work alongside your favorite query builders. If you need to hand off the connection to Drizzle ORM, you can use the `.native` escape hatch, which exposes the underlying database driver (`postgres.js`, `mysql2`, or `better-sqlite3`).
 
 ```typescript
 import {drizzle} from 'drizzle-orm/postgres-js';
@@ -412,15 +314,7 @@ const db = drizzle(client.native);
 
 ---
 
-<br/>
-
-<span style="background-color: #0095ED; color: #eeeeee; font-size: 1.8em; padding: 3px 0 4px 4px; border-top-left-radius: 7px; border-bottom-left-radius: 7px; font-weight: bold;">
-    ⚙️
-</span>
-<span style="background-color: #0095ED; color: #eeeeee; font-size: 1.8em; padding: 3px 0 4px 2px; border-top-right-radius: 7px; border-bottom-right-radius: 7px; font-weight: bold;">
-    <span style="text-decoration: none;">Configuration</span>
-    <span style="text-decoration: none;">&nbsp;</span>
-</span>
+## ⚙️ Configuration
 
 ### PostgreSQL
 ```typescript
@@ -462,15 +356,7 @@ Support for MSSQL is currently in development and will be released soon 😊
 ```
 ---
 
-<br/>
-
-<span style="background-color: #0095ED; color: #eeeeee; font-size: 1.8em; padding: 3px 0 4px 4px; border-top-left-radius: 7px; border-bottom-left-radius: 7px; font-weight: bold;">
-    ⚠️
-</span>
-<span style="background-color: #0095ED; color: #eeeeee; font-size: 1.8em; padding: 3px 0 4px 2px; border-top-right-radius: 7px; border-bottom-right-radius: 7px; font-weight: bold;">
-    <span style="text-decoration: none;">Requirements</span>
-    <span style="text-decoration: none;">&nbsp;</span>
-</span>
+## ⚠️ Requirements
 
 - **Node.js:** 18+
 - **PostgreSQL:** 12+ (Native `LISTEN/NOTIFY` used)
@@ -479,50 +365,26 @@ Support for MSSQL is currently in development and will be released soon 😊
 
 ---
 
-<br/>
-
-<span style="background-color: #0095ED; color: #eeeeee; font-size: 1.8em; padding: 3px 0 4px 4px; border-top-left-radius: 7px; border-bottom-left-radius: 7px; font-weight: bold;">
-    🤝
-</span>
-<span style="background-color: #0095ED; color: #eeeeee; font-size: 1.8em; padding: 3px 0 4px 2px; border-top-right-radius: 7px; border-bottom-right-radius: 7px; font-weight: bold;">
-    <span style="text-decoration: none;">Contributing (Plugins vs. Core)</span>
-    <span style="text-decoration: none;">&nbsp;</span>
-</span>
+## 🤝 Contributing (Plugins vs. Core)
 
 **Kinetic SQL** was designed to overcome the restrictions and bloating that other libraries come with. When building the Engine, I also wanted to make sure developers are not limited to the core features and can easily add any plugins or extensions to the library! 
 
-If you want to add custom behaviors (APM tracing, logging, data masking, etc.), please build an **Official Plugin** using our <span style="background-color: #0095ED; color: #eeeeee; font-size: 1.1em; padding: 1px 4px; border-radius: 4px; font-weight: bold;">
-Middleware API</span> rather than modifying the core driver execution path.
+If you want to add custom behaviors (APM tracing, logging, data masking, etc.), please build an **Official Plugin** using our <code><b>Middleware API</b></code> rather than modifying the core driver execution path.
 
-[//]: # (<code><b>Middleware API</b></code>)
+
 This helps maintain the strict `< 4ms` query latency guarantee, the core execution engine comes with.
 
 Please check out `CONTRIBUTING.md` to learn more about architectural philosophy and how you can contribute to the project.
 
 ---
 
-<br/>
-
-<span style="background-color: #0095ED; color: #eeeeee; font-size: 1.8em; padding: 3px 0 4px 4px; border-top-left-radius: 7px; border-bottom-left-radius: 7px; font-weight: bold;">
-    📄 
-</span>
-<span style="background-color: #0095ED; color: #eeeeee; font-size: 1.8em; padding: 3px 0 4px 2px; border-top-right-radius: 7px; border-bottom-right-radius: 7px; font-weight: bold;">
-    <span style="text-decoration: none;">License</span>
-    <span style="text-decoration: none;">&nbsp;</span>
-</span>
+## 📄 License
 
 - #### MIT – See [LICENSE](https://github.com/serial-committer/kinetic-sql/blob/main/LICENSE) for details.
 
 ---
 
-<br/>
-<span style="background-color: #0095ED; color: #eeeeee; font-size: 1.8em; padding: 3px 0 4px 4px; border-top-left-radius: 7px; border-bottom-left-radius: 7px; font-weight: bold;">
-    🐞
-</span>
-<span style="background-color: #0095ED; color: #eeeeee; font-size: 1.8em; padding: 3px 0 4px 2px; border-top-right-radius: 7px; border-bottom-right-radius: 7px; font-weight: bold;">
-    <span style="text-decoration: none;">Bugs, Issues, and Feature Requests</span>
-    <span style="text-decoration: none;">&nbsp;</span>
-</span>
+## 🐞 Bugs, Issues, and Feature Requests
 
 **Kinetic SQL** is actively maintained. If you run into any issues, have feature requests, please feel free to open an issue on the GitHub repo:
 
