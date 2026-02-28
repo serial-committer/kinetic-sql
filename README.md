@@ -14,7 +14,7 @@ Kinetic SQL is a next-gen Node.js client that wraps **PostgreSQL**, **MySQL** & 
 
 ---
 
-## 📜 <u>Features</u>
+## 📜 Features
 
 Kinetic SQL turns your database into a reactive extension of your code.
 - **✨ RPC Wrapper:** Call your stored procedures and database functions just like native JavaScript methods.
@@ -90,9 +90,9 @@ npx k-sql gen --type sqlite --db ./dev.db
 
 ---
 
-## 📚 <u>Usage</u>
+## 📚 Usage 
 
-## 🚀 <u>NestJS Integration</u>
+## NestJS Integration 🚀
 
 Kinetic SQL exports a native NestJS module for zero-config setup. Using the library in your NestJS app is as simple as:
 
@@ -114,7 +114,7 @@ export class AppModule {}
 ```
 ---
 
-## ⚡<u>Realtime Subscriptions</u>
+## Realtime Subscriptions ⚡
 
 Listen to database events without setting up WebSockets. 
 
@@ -133,9 +133,9 @@ await sub.unsubscribe();
 
 ---
 
-## ✨ <u>RPC Wrapper: The Robust Magic Bridge</u>
+## RPC Wrapper: The Robust Magic Bridge ✨
 
-#### Extend SQL with JavaScript `OR` Call stored procedures as native JS methods bridging the gap between your Backend and the Database.
+Extend SQL with JavaScript `OR` Call stored procedures as native JS methods bridging the gap between your Backend and the Database.
 
 **<u>Extend SQL with JavaScript</u>:**
 Why write complex SQL logic when you can just write JavaScript? Define a function in your Node.js app and call it ***inside*** your SQL queries. 😊
@@ -186,12 +186,12 @@ const { data, error } = await client.rpc('add_todo',
 
 ---
 
-## <u>Plugins: Middleware API</u> 🔌
+## Plugins: Middleware API 🔌
 
 **Kinetic SQL** is engineered with a strict, lightweight core to guarantee `sub-4 ms` query latency. There are instances where developers might need to execute pre and post query logic. To keep the core engine blazingly fast, all non-essential features (like custom logging, APM tracing, or data masking) can be easily plugged into the core using the exposed hooks **OR** if that feature is required across multiple projects, you can also build your own **Official Plugins** using the `Middleware API`.
 
 
-#### <u>Example: Building a Custom Logger Plugin</u>:
+### Example: Building a Custom Logger Plugin:
 
 Creating a plugin is as simple as defining a `KineticMiddleware` object that taps into the query lifecycle hooks.
 
@@ -219,9 +219,7 @@ export const PerformanceLogger: KineticMiddleware = {
 };
 ````
 
-<br/>
-
-#### <u>HOW TO: Registering Middleware (Express/Vanilla Node)</u> ❓:
+### HOW TO: Registering Middleware (Express/Vanilla Node)❓:
 
 Chain the `.use()` method immediately after creating your client instance.
 ```typescript
@@ -239,9 +237,8 @@ client.use(PerformanceLogger);
 /* The plugin will now intercept all raw() and rpc() calls */
 await client.raw('SELECT * FROM users');
 ```
-<br/>
 
-#### <u>HOW TO: Registering Middleware (NestJS)</u> ❓:
+### HOW TO: Registering Middleware (NestJS) ❓:
 
 If you are using the official KineticModule for NestJS, you can easily register your middleware plugins during the asynchronous module initialization.
 ```typescript
@@ -267,7 +264,7 @@ export class AppModule {
 ```
 ---
 
-### <u>Executing Raw Queries</u> ⚡
+## Executing Raw Queries ⚡
 
 If you need to execute complex, custom SQL strings, use the `.raw()` method.  
 **Bonus:** All queries executed through `.raw()` automatically pass through your custom Middleware pipeline!
@@ -279,7 +276,7 @@ const users = await client.raw('SELECT * FROM users WHERE age > ?', [21]);
 
 ---
 
-### <u>Prepared Statements (Optimized & Tracked)</u> 🚀
+## Prepared Statements (Optimized & Tracked) 🚀
 
 When you need to execute the same query hundreds of times (like bulk inserts or high-frequency updates), parsing the SQL string on every call is a waste of CPU cycles.
 
@@ -298,7 +295,7 @@ await insertUser.execute(['Charlie', 22]);
 
 ---
 
-### <u>Standard Queries (via Drizzle)</u> ✨
+## Standard Queries (via Drizzle) ✨
 
 Kinetic SQL is designed to work alongside your favorite query builders. If you need to hand off the connection to Drizzle ORM, you can use the `.native` escape hatch, which exposes the underlying database driver (`postgres.js`, `mysql2`, or `better-sqlite3`).
 
