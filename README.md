@@ -38,7 +38,7 @@ To stress-test the real-time event mapping and zero-bloat architecture, we built
 
 ## 🚀 Quick Start
 
-### 1. <u>Install</u>
+### 1. <ins>Install</ins>
 
 ```bash
 # For PostgreSQL:
@@ -51,7 +51,7 @@ npm install kinetic-sql drizzle-orm mysql2 @rodrigogs/mysql-events
 npm install kinetic-sql better-sqlite3
 ```
 
-### 2. <u>Initialize</u>
+### 2. <ins>Initialize</ins>
 
 ```typescript
 import { KineticClient } from 'kinetic-sql';
@@ -71,7 +71,7 @@ const client = await KineticClient.create({
 });
 ```
 
-### 3. <u>Generate Types</u> (The Magic)
+### 3. <ins>Generate Types</ins> (The Magic)
 
 Run this command in your terminal. It reads your DB and patches the library automatically.
 
@@ -137,10 +137,10 @@ await sub.unsubscribe();
 
 Extend SQL with JavaScript `OR` Call stored procedures as native JS methods bridging the gap between your Backend and the Database.
 
-**<u>Extend SQL with JavaScript</u>:**
+**<ins>Extend SQL with JavaScript</ins>:**
 Why write complex SQL logic when you can just write JavaScript? Define a function in your Node.js app and call it ***inside*** your SQL queries. 😊
 
-#### &nbsp;&nbsp;Example:
+#### &nbsp;&nbsp;<ins>Example</ins>:
 
 ```typescript
 /* Define a function in your app */
@@ -162,9 +162,9 @@ console.log(result);
 ```
 <br/>
 
-**<u>Call Stored Procedures</u>:** Invoke complex database logic without writing raw SQL strings (Using Postgres for the examples below) ✨
+**<ins>Call Stored Procedures</ins>:** Invoke complex database logic without writing raw SQL strings (Using Postgres for the examples below) ✨
 
-#### &nbsp;&nbsp;Example 1:
+#### &nbsp;&nbsp;<ins>Example 1</ins>:
 
 ```typescript
 /* Calls the 'create_user' stored procedure safely along with auto-completion and type-safety! */
@@ -174,7 +174,7 @@ const { data, error } = await client.rpc('create_user', {
 });
 ```
 
-#### &nbsp;&nbsp;Example 2:
+#### &nbsp;&nbsp;<ins>Example 2</ins>:
 
 ```typescript
 /* Calls the stored procedure 'add_todo' (Auto-completed!) */
@@ -191,7 +191,7 @@ const { data, error } = await client.rpc('add_todo',
 **Kinetic SQL** is engineered with a strict, lightweight core to guarantee `sub-4 ms` query latency. There are instances where developers might need to execute pre and post query logic. To keep the core engine blazingly fast, all non-essential features (like custom logging, APM tracing, or data masking) can be easily plugged into the core using the exposed hooks **OR** if that feature is required across multiple projects, you can also build your own **Official Plugins** using the `Middleware API`.
 
 
-### Example: Building a Custom Logger Plugin:
+### <ins>Example: Building a Custom Logger Plugin</ins>:
 
 Creating a plugin is as simple as defining a `KineticMiddleware` object that taps into the query lifecycle hooks.
 
@@ -219,7 +219,7 @@ export const PerformanceLogger: KineticMiddleware = {
 };
 ````
 
-### HOW TO: Registering Middleware (Express/Vanilla Node)❓:
+### <ins>HOW TO: Registering Middleware</ins> (Express/Vanilla Node)❓:
 
 Chain the `.use()` method immediately after creating your client instance.
 ```typescript
@@ -238,7 +238,7 @@ client.use(PerformanceLogger);
 await client.raw('SELECT * FROM users');
 ```
 
-### HOW TO: Registering Middleware (NestJS) ❓:
+### <ins>HOW TO: Registering Middleware</ins> (NestJS) ❓:
 
 If you are using the official KineticModule for NestJS, you can easily register your middleware plugins during the asynchronous module initialization.
 ```typescript
@@ -316,26 +316,26 @@ const db = drizzle(client.native);
 ### PostgreSQL
 ```typescript
 const client = await KineticClient.create({
-type: 'pg',
-host: 'localhost',
-port: 5432,
-user: 'postgres',
-password: 'password',
-database: 'mydb',
-realtimeEnabled: true
+  type: 'pg',
+  host: 'localhost',
+  port: 5432,
+  user: 'postgres',
+  password: 'password',
+  database: 'mydb',
+  realtimeEnabled: true
 });
 ```
 
 ### MySQL
 ```typescript
 const client = await KineticClient.create({
-type: 'mysql',
-host: 'localhost',
-port: 3306,
-user: 'root',
-password: 'password',
-database: 'mydb',
-realtimeEnabled: true // Requires Binary Logging enabled on server
+  type: 'mysql',
+  host: 'localhost',
+  port: 3306,
+  user: 'root',
+  password: 'password',
+  database: 'mydb',
+  realtimeEnabled: true // Requires Binary Logging enabled on server
 });
 ```
 
