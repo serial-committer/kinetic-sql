@@ -1,6 +1,6 @@
 {
   "name": "kinetic-sql",
-  "version": "3.1.4",
+  "version": "3.1.5",
   "description": "Zero-config, type-safe Postgres, MySQL & SQLite client with Realtime subscriptions and Spring style Transactions.",
   "type": "module",
   "main": "./dist/index.js",
@@ -92,7 +92,7 @@
   "author": {
     "name": "Kapil Kumar",
     "email": "kapilkumar@yourservice.now",
-    "url": "https://the-debug-knight.bio/login?autoLogin=true&code=GUEST-95CC"
+    "url": "https://the-debug-knight.bio/portfolio"
   },
   "license": "MIT",
   "repository": {
