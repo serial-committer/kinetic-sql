@@ -8,7 +8,7 @@ export class MysqlDriver implements IDriver {
     private logger: KineticLogger;
     private readonly pool: mysql.Pool;
     private instance: MySQLEvents | null = null;
-    private subscribers: Map<string, (data: any) => void> = new Map();
+    private subscribers: Map<string, ((data: any) => void)[]> = new Map();
     private config: any;
 
     constructor(config: any) {
@@ -44,7 +44,7 @@ export class MysqlDriver implements IDriver {
                     return rows;
                 } catch (err: any) {
                     this.logger.error(`Prepared query failed: ${sql}`, err);
-                    throw new Error(`Failed to execute prepared MySQL query: ${err.message}`);
+                    throw new KineticError('QUERY_FAILED', 'Failed to execute prepared MySQL query', err);
                 }
             }
         };
@@ -89,15 +89,22 @@ export class MysqlDriver implements IDriver {
                 /* Security: Ensure the event belongs to the database */
                 if (event.schema !== this.config.database) return;
 
-                /* Route to subscriber*/
-                if (this.subscribers.has(event.table)) {
-                    const callback = this.subscribers.get(event.table);
-                    if (callback) {
-                        event.rows.forEach((row: any) => {
-                            callback({action: event.type, data: row});
-                        });
+                /* Route to every subscriber watching this table */
+                const callbacks = this.subscribers.get(event.table);
+                if (!callbacks || callbacks.length === 0) return;
+
+                event.rows.forEach((row: any) => {
+                    const payload = {action: event.type, data: row};
+
+                    /* A throwing listener must not stop the others being notified */
+                    for (const callback of callbacks) {
+                        try {
+                            callback(payload);
+                        } catch (err) {
+                            this.logger.error(`A subscriber for ${event.table} threw`, err);
+                        }
                     }
-                }
+                });
             }
         });
 
@@ -111,11 +118,20 @@ export class MysqlDriver implements IDriver {
             throw new KineticError('CONFIG_ERROR', 'Realtime is disabled. Set { realtimeEnabled: true } in config.');
         }
 
-        this.subscribers.set(tableName, callback);
+        /* Kept as a list so several listeners can watch the same table */
+        const callbacks = this.subscribers.get(tableName) ?? [];
+        callbacks.push(callback);
+        this.subscribers.set(tableName, callbacks);
+
         this.logger.info(`Table: ${tableName} configured for broadcasting changes in realtime 🔔`);
         return {
             unsubscribe: () => {
-                this.subscribers.delete(tableName);
+                const list = this.subscribers.get(tableName);
+                if (!list) return;
+
+                const index = list.indexOf(callback);
+                if (index > -1) list.splice(index, 1);
+                if (list.length === 0) this.subscribers.delete(tableName);
             }
         };
     }

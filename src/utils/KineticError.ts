@@ -4,6 +4,9 @@ export type KineticErrorCode =
     | 'QUERY_FAILED'
     | 'RPC_ERROR'
     | 'REALTIME_ERROR'
+    | 'TRANSACTION_ERROR'
+    | 'TRANSACTION_TIMEOUT'
+    | 'TRANSACTION_ROLLBACK'
     | 'INTERNAL_ERROR';
 
 export class KineticError extends Error {
