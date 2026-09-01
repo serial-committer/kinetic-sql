@@ -290,7 +290,7 @@ Only genuinely transient errors are retried (Postgres `40001`/`40P01`, MySQL `12
 
 **<ins>Opting out with `noRetry`</ins>:**
 
-Because a retry re-runs your block, anything in it that *isn't* just a database call would happen twice. If your block sends an email or charges a card, opt out of it by using `noRetry` for e.g.,:
+Because a retry re-runs your block, anything in it that *isn't* just a database call would happen twice. If your block sends an email or charges a card, opt out with `noRetry`:
 
 ```typescript
 await client.transaction({ noRetry: true }, async () => {
