@@ -1,16 +1,51 @@
 # ⚡ Kinetic SQL
 
->**A lightweight, type-safe, real-time SQL Engine for Node.js. The "Tailwind" of Database Clients.**
+>**Realtime subscriptions and Spring Boot style transactions for PostgreSQL, MySQL and SQLite. Keep the ORM you already use.**
 
 <br/>
 
+[![CI](https://github.com/serial-committer/kinetic-sql/actions/workflows/ci.yml/badge.svg)](https://github.com/serial-committer/kinetic-sql/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![NPM Version](https://img.shields.io/npm/v/kinetic-sql.svg)](https://www.npmjs.com/package/kinetic-sql)
 [![GitHub Repo](https://img.shields.io/badge/GitHub-Repository-blue.svg)](https://github.com/serial-committer/kinetic-sql)
 
-Kinetic SQL is a next-gen Node.js client that wraps **PostgreSQL**, **MySQL** & **SQLite** with features that enable the developer to interact with databases seamlessly.
+Your database already knows the instant a row changes. **Kinetic SQL hands you that instant in JavaScript**, on your own PostgreSQL, MySQL or SQLite, with no extra infrastructure and nobody to sign up with.
 
-🚀 **[Experience the Live Demo: Real-Time Stock Simulator](https://live-stock-simulator.vercel.app/)**
+```typescript
+/* Typed. No WebSocket server, no polling, no vendor. */
+await client.subscribe('orders', (event) => {
+  console.log(event.action, event.data.total); // 'INSERT' | 'UPDATE' | 'DELETE'
+});
+```
+
+🚀 **[Watch it happen live: Real-Time Stock Simulator](https://live-stock-simulator.vercel.app/)**
+
+---
+
+## 🤝 It does not replace your ORM
+
+This is the part people usually assume wrong. Kinetic SQL is not asking you to rewrite your data layer.
+
+Keep Drizzle, Prisma or whatever you already query with. Hand the connection over whenever you want a query builder, and use Kinetic for the things an ORM does not do:
+
+```typescript
+import {drizzle} from 'drizzle-orm/postgres-js';
+
+const client = await KineticClient.create({type: 'pg', connectionString: process.env.DATABASE_URL});
+
+const db = drizzle(client.native); /* Your existing queries, untouched */
+
+await client.subscribe('orders', onOrderChanged); /* What you came here for */
+```
+
+|                                            | Kinetic SQL             | Drizzle / Prisma          | Supabase Realtime     |
+|--------------------------------------------|-------------------------|---------------------------|-----------------------|
+| Realtime row events                        | Built in                | Not offered               | Yes                   |
+| Runs on **your** database                  | Yes                     | Yes                       | Supabase hosted only  |
+| PostgreSQL, MySQL and SQLite               | All three               | All three                 | PostgreSQL only       |
+| Transactions without passing `tx` around   | Yes                     | No, you thread the handle | Not applicable        |
+| Spring Boot style propagation              | Seven modes             | Nested savepoints only    | Not applicable        |
+| Query builder and migrations               | Use Drizzle alongside   | Yes                       | Yes                   |
 
 ---
 
@@ -132,7 +167,7 @@ console.log(event.data.title); // Typed Reference!
 await sub.unsubscribe();
 ```
 
-**<ins>Several listeners, one table</ins>:** You can subscribe to the same table as many times as you like — every listener gets every event, and `unsubscribe()` only removes the one you called it on. Handy when different parts of your app care about the same data for different reasons.
+**<ins>Several listeners, one table</ins>:** You can subscribe to the same table as many times as you like. Every listener gets every event, and `unsubscribe()` only removes the one you called it on. Handy when different parts of your app care about the same data for different reasons.
 
 ```typescript
 const badge = await client.subscribe('tasks', (e) => updateBadgeCount(e));
@@ -351,7 +386,7 @@ await client.transaction(async (tx) => {
 
 ### <ins>The Spring Boot Way</ins>: `@Transactional` 🍃
 
-If you'd rather declare it than wrap it, use the decorator. Every call to the method runs in a transaction, and queries inside it join automatically — exactly like `Spring Boot`:
+If you'd rather declare it than wrap it, use the decorator. Every call to the method runs in a transaction, and queries inside it join automatically, exactly like `Spring Boot`:
 
 ```typescript
 import { Transactional, Propagation } from 'kinetic-sql';
