@@ -19,6 +19,7 @@ Kinetic SQL is a next-gen Node.js client that wraps **PostgreSQL**, **MySQL** & 
 Kinetic SQL turns your database into a reactive extension of your code.
 - **✨ RPC Wrapper:** Call your stored procedures and database functions just like native JavaScript methods.
 - **⚡ Real-Time Subscriptions:** Listen to `INSERT`, `UPDATE`, and `DELETE` events instantly.
+- **🔒 Transactions with Propagation:** Atomic blocks with `Spring Boot` style propagation, savepoints for partial rollbacks, isolation levels, and automatic retries on deadlocks.
 - **🌍 Universal Fit:** Built for `Express`, `Fastify`, and `Vanilla JS`, with a dedicated module for seamless `NestJS` integration out of the box.
 - **🚀 NestJS Native:** Drop-in `KineticModule` for zero-config integration with NestJS Framework.
 - **🤖 Automatic Type Generation:** It reads your schema and auto-generates type safety. You never have to manually write a TypeScript interface again.
@@ -131,6 +132,17 @@ console.log(event.data.title); // Typed Reference!
 await sub.unsubscribe();
 ```
 
+**<ins>Several listeners, one table</ins>:** You can subscribe to the same table as many times as you like — every listener gets every event, and `unsubscribe()` only removes the one you called it on. Handy when different parts of your app care about the same data for different reasons.
+
+```typescript
+const badge = await client.subscribe('tasks', (e) => updateBadgeCount(e));
+const feed  = await client.subscribe('tasks', (e) => appendToActivityFeed(e));
+
+await badge.unsubscribe(); /* The activity feed keeps working 👍 */
+```
+
+> 💡 On **PostgreSQL**, all of your subscriptions share a **single** listening connection, no matter how many tables you watch. Your pool stays free for actual queries.
+
 ---
 
 ## RPC Wrapper: The Robust Magic Bridge ✨
@@ -186,6 +198,239 @@ const { data, error } = await client.rpc('add_todo',
 
 ---
 
+## Transactions: Atomic Boundaries 🔒
+
+Wrap any unit of work in a transaction. It **commits** when your block returns and **rolls back** when it throws. You never have to remember to do either yourself.
+
+Here's the part that makes it different: queries made *anywhere inside the block* join the transaction **automatically**. You don't have to thread a `tx` object through every function in your service layer. 😊
+
+```typescript
+await client.transaction(async (tx) => {
+  /* This joins the transaction */
+  await client.raw('UPDATE accounts SET balance = balance - 100 WHERE id = ?', [1]);
+
+  /* So does every query made inside here. Nothing was passed in! */
+  await ledgerService.record(1, -100);
+
+  /* Or use the handle explicitly, if you prefer being obvious */
+  await tx.raw('UPDATE accounts SET balance = balance + 100 WHERE id = ?', [2]);
+});
+
+/* Committed. If anything above had thrown an error, all three would have rolled back. */
+```
+
+---
+
+### <ins>Propagation</ins>: What happens when transactions meet ❓
+
+Just like `Spring Boot`, you can control how a block behaves when another transaction is *already* running. Pass a `propagation` option:
+
+```typescript
+import { Propagation } from 'kinetic-sql';
+
+await client.transaction({ propagation: Propagation.NESTED }, async (tx) => {
+  await client.raw('INSERT INTO audit_log (event) VALUES (?)', ['risky-step']);
+});
+```
+
+| Propagation | What it does                                                                                                                  |
+|---|-------------------------------------------------------------------------------------------------------------------------------|
+| `REQUIRED` *(default)* | Joins the running transaction, or starts one if there isn't any.                                                              |
+| `REQUIRES_NEW` | Runs in its **own** transaction on a separate connection. Commits even if the outer one rolls back.                           |
+| `NESTED` | Runs inside a `SAVEPOINT`. If it fails, only the work inside *its* boundary is rolled back. The outer transaction carries on. |
+| `MANDATORY` | Throws if there is no transaction already running.                                                                            |
+| `NEVER` | Throws if a transaction **is** running.                                                                                       |
+| `SUPPORTS` | Joins one if it exists, otherwise just runs normally.                                                                         |
+| `NOT_SUPPORTED` | Suspends the running transaction and runs outside it.                                                                         |
+
+---
+
+### <ins>Partial Rollbacks</ins>: Savepoints ⏪
+
+This is very useful when one step is allowed to fail without sinking everything around it. Use `tx.savepoint()` (or `Propagation.NESTED`, they do the same thing):
+
+```typescript
+await client.transaction(async (tx) => {
+  await client.raw('INSERT INTO orders (id, total) VALUES (?, ?)', [1, 500]);
+
+  try {
+    /* Optional step: nice to have, not worth losing the order over */
+    await tx.savepoint(async () => {
+      await client.raw('INSERT INTO loyalty_points (order_id, points) VALUES (?, ?)', [1, 50]);
+      throw new Error('Loyalty service is down!');
+    });
+  } catch {
+    console.warn('Skipped loyalty points, order is still fine 👍');
+  }
+});
+
+/* The order was saved. Only the loyalty points were rolled back. */
+```
+
+Savepoints can be nested inside savepoints, as deep as you like.
+
+> ⚠️ **Careful with `REQUIRED`:** if an inner block *joins* the outer transaction (the default) and then fails, the whole transaction is marked **rollback-only** even if you catch the error. That is deliberate: committing work that a failed step left behind is how data goes bad. If you want the failure contained, use `NESTED`.
+
+---
+
+### <ins>Automatic Retries</ins>: Deadlocks handled for you 🔁
+
+Under high concurrency (especially at `SERIALIZABLE`), databases abort transactions to break deadlocks and serialization conflicts. Postgres' own documentation says applications **must** be ready to retry these.
+
+**Kinetic SQL** does it for you. **Retries are on by default** - no annotation, no wrapper, no extra config:
+
+```typescript
+/* Retried automatically on a deadlock or serialization failure */
+await client.transaction(async () => {
+  await client.raw('UPDATE inventory SET stock = stock - 1 WHERE id = ?', [42]);
+});
+```
+
+Only genuinely transient errors are retried (Postgres `40001`/`40P01`, MySQL `1213`/`1205`, SQLite `SQLITE_BUSY`). Your application errors are **never** replayed. Retries use an exponential backoff with jitter so retrying peers don't collide all over again.
+
+**<ins>Opting out with `noRetry`</ins>:**
+
+Because a retry re-runs your block, anything in it that *isn't* just a database call would happen twice. If your block sends an email or charges a card, opt out with `noRetry`:
+
+```typescript
+await client.transaction({ noRetry: true }, async () => {
+  await client.raw('INSERT INTO payments (amount) VALUES (?)', [999]);
+  await stripe.charges.create({ /* ... */ }); /* 👈 must not run twice! */
+});
+
+/* You can also tune the attempts (default is 3) */
+await client.transaction({ maxRetries: 5 }, async () => { /* ... */ });
+```
+
+---
+
+### <ins>Isolation, Read-Only & Timeouts</ins> ⚙️
+
+```typescript
+import { Isolation } from 'kinetic-sql';
+
+await client.transaction({
+  isolation: Isolation.SERIALIZABLE, /* READ_UNCOMMITTED | READ_COMMITTED | REPEATABLE_READ | SERIALIZABLE */
+  readOnly: true,                    /* Lets the engine optimise, and blocks accidental writes */
+  timeout: 5000                      /* Give up after 5 seconds */
+}, async () => {
+  return client.raw('SELECT * FROM heavy_report_view');
+});
+```
+
+---
+
+### <ins>Deciding what counts as a rollback</ins> 🎯
+
+Everything rolls back by default. When you need an exception to that, `noRollbackFor` keeps the work and still throws the error at you:
+
+```typescript
+class ValidationError extends Error {}
+
+await client.transaction({ noRollbackFor: [ValidationError] }, async () => {
+  await client.raw('INSERT INTO signup_attempts (email) VALUES (?)', ['a@b.com']);
+
+  /* The attempt above is still recorded, and this error still reaches your catch block */
+  throw new ValidationError('Email already taken');
+});
+```
+
+`rollbackFor` takes priority over `noRollbackFor`, so you can carve out an exception to your exception. You can match on an error class, an error `code` string, or your own function.
+
+Need to block a commit without throwing? Use `tx.setRollbackOnly()`:
+
+```typescript
+await client.transaction(async (tx) => {
+  const rows = await client.raw('SELECT stock FROM inventory WHERE id = ?', [42]);
+    /* Block carries on, but nothing will be committed */
+  if (rows[0].stock < 1) tx.setRollbackOnly(); 
+});
+```
+
+---
+
+### <ins>The Spring Boot Way</ins>: `@Transactional` 🍃
+
+If you'd rather declare it than wrap it, use the decorator. Every call to the method runs in a transaction, and queries inside it join automatically — exactly like `Spring Boot`:
+
+```typescript
+import { Transactional, Propagation } from 'kinetic-sql';
+/* In a NestJS app, you can import it from 'kinetic-sql/nestjs' instead */
+
+@Injectable()
+export class OrderService {
+  constructor(@InjectDB() private db: KineticClient) {}
+
+  @Transactional()
+  async placeOrder(userId: number, total: number) {
+    await this.db.raw('INSERT INTO orders (user_id, total) VALUES (?, ?)', [userId, total]);
+    await this.chargeWallet(userId, total); /* Joins the same transaction */
+  }
+
+  @Transactional({ propagation: Propagation.REQUIRES_NEW })
+  async writeAuditLog(event: string) {
+    /* Commits on its own, even if the caller rolls back */
+    await this.db.raw('INSERT INTO audit (event) VALUES (?)', [event]);
+  }
+}
+```
+
+It takes every option `client.transaction()` does, and works with both legacy and standard TypeScript decorators. No additional `tsconfig` changes needed. The decorator uses the first client you created; if your app has several, point it at the right one with `setDefaultClient(client)`.
+
+---
+
+### <ins>Manual Control</ins> 🔧
+
+For the rare case where the boundary can't fit inside one block (spanning multiple HTTP requests, for example):
+
+```typescript
+const tx = await client.beginTransaction();
+
+try {
+  await tx.raw('INSERT INTO drafts (body) VALUES (?)', ['hello']);
+  await tx.commit();
+} catch (err) {
+  await tx.rollback();
+}
+```
+
+⚠️ You own the connection until you settle it, so always `commit()` or `rollback()` ⚠️  
+A forgotten transaction holds a pooled connection open. Automatic retries don't apply here, because there's no block to replay.
+
+---
+
+### <ins>Watching Transactions from a Plugin</ins> 🔌
+
+Transactions show up in the `Middleware API` too. Every `QueryContext` carries a `txId`, so you can group queries by the transaction they belonged to, and there are three lifecycle hooks:
+
+```typescript
+import { KineticMiddleware } from 'kinetic-sql';
+
+export const TransactionLogger: KineticMiddleware = {
+  name: 'TransactionLogger',
+
+  onTransactionBegin: (info) => console.log(`🟢 ${info.id} started (attempt ${info.attempt})`),
+  onTransactionCommit: (info) => console.log(`✅ ${info.id} committed`),
+  onTransactionRollback: (info, error) => console.error(`↩️ ${info.id} rolled back:`, error?.message),
+
+  /* Now you can tell which transaction a query belonged to */
+  afterQuery: (ctx) => console.log(`  [${ctx.txId ?? 'no-tx'}] ${ctx.sqlOrName}`)
+};
+```
+
+---
+
+### <ins>Engine Notes</ins> 📌
+
+A few honest details about what each database can actually do:
+
+- **PostgreSQL:** everything is fully supported. `timeout` is also enforced on the server-side via `statement_timeout`.
+- **MySQL:** everything is supported. `timeout` is enforced in Node, and on the server-side but only for `SELECT` statements (that's a `MySQL` limitation, not `Kinetic SQL`).
+- **SQLite:** `better-sqlite3` gives one synchronous connection, so overlapping transactions are **queued** rather than run in parallel. There won't be any lost updates, but no concurrency either. `REQUIRES_NEW` opens a second connection to your database file, which means it needs a **file-backed** database (an in-memory SQLite instance will tell you so clearly), and because SQLite allows only one writer at a time it works best when the outer transaction is `readOnly`. `NOT_SUPPORTED` can't fully suspend on a single connection.
+- **`timeout` everywhere:** it stops *waiting* for a slow block and rolls it back. It cannot cancel a query that is already executing.
+
+---
+
 ## Plugins: Middleware API 🔌
 
 **Kinetic SQL** is engineered with a strict, lightweight core to guarantee `sub-4 ms` query latency. There are instances where developers might need to execute pre and post query logic. To keep the core engine blazingly fast, all non-essential features (like custom logging, APM tracing, or data masking) can be easily plugged into the core using the exposed hooks **OR** if that feature is required across multiple projects, you can also build your own **Official Plugins** using the `Middleware API`.
@@ -217,7 +462,7 @@ export const PerformanceLogger: KineticMiddleware = {
       console.error(`❌ FAILED: ${ctx.sqlOrName}`, error.message);
   }
 };
-````
+```
 
 ### <ins>HOW TO: Registering Middleware</ins> (Express/Vanilla Node)❓:
 
@@ -307,6 +552,19 @@ const client = await KineticClient.create({type: 'pg', /* ... */});
 
 /* Pass the native driver instance to Drizzle */
 const db = drizzle(client.native);
+```
+
+---
+
+## Shutting Down Cleanly 🧹
+
+Call `.end()` to close the connection pool and stop any realtime watchers. Handy in tests, scripts, and graceful shutdown hooks. Without it, an open pool will keep your process alive.
+
+```typescript
+process.on('SIGTERM', async () => {
+  await client.end();
+  process.exit(0);
+});
 ```
 
 ---

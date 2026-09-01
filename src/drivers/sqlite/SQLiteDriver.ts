@@ -39,11 +39,24 @@ export class SQLiteDriver implements IDriver {
     }
 
     public prepare(sql: string) {
-        const stmt = this.db.prepare(sql);
+        let stmt: Database.Statement;
+
+        try {
+            stmt = this.db.prepare(sql);
+        } catch (err: any) {
+            this.logger.error(`Prepare failed: ${sql}`, err);
+            throw new KineticError('QUERY_FAILED', 'Failed to prepare SQLite statement', err);
+        }
+
         return {
             execute: async (params: any[] = []) => {
-                if (stmt.reader) return stmt.all(...params);
-                return stmt.run(...params);
+                try {
+                    if (stmt.reader) return stmt.all(...params);
+                    return stmt.run(...params);
+                } catch (err: any) {
+                    this.logger.error(`Prepared query failed: ${sql}`, err);
+                    throw new KineticError('QUERY_FAILED', 'Failed to execute prepared SQLite query', err);
+                }
             }
         };
     }

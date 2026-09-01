@@ -94,3 +94,7 @@ export class KineticModule implements OnModuleInit {
 }
 
 export const InjectDB = () => Inject(KINETIC_DB);
+
+/* Re-exported so NestJS users find the decorator alongside the module. */
+export {Transactional} from '../transactions/Transactional.js';
+export {Propagation, Isolation} from '../transactions/constants.js';

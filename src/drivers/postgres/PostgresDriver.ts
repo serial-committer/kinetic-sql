@@ -10,6 +10,15 @@ export class PostgresDriver implements IDriver {
     private readonly config: any;
     public realtimeEnabled: boolean;
 
+    /**
+     * Every subscription shares one listening connection.
+     * Listeners block their connection, so opening one per table would burn
+     * a pooled connection for each table being watched.
+     */
+    private subscribers: Map<string, ((payload: any) => void)[]> = new Map();
+    private listener: postgres.Sql | null = null;
+    private listenerSetup: Promise<void> | null = null;
+
     constructor(config: any) {
         this.config = config;
         this.realtimeEnabled = config.realtimeEnabled || false;
@@ -38,7 +47,12 @@ export class PostgresDriver implements IDriver {
     public prepare(sql: string) {
         return {
             execute: async (params: any[] = []) => {
-                return this.sql.unsafe(sql, params);
+                try {
+                    return await this.sql.unsafe(sql, params);
+                } catch (err: any) {
+                    this.logger.error(`Prepared query failed: ${sql}`, err);
+                    throw new KineticError('QUERY_FAILED', 'Failed to execute prepared Postgres query', err);
+                }
             }
         };
     }
@@ -87,6 +101,70 @@ export class PostgresDriver implements IDriver {
     }
 
     /**
+     * DEDICATED LISTENING CONNECTION
+     * Cloned from the config but forced to max: 1, because a listener blocks
+     * whichever connection it runs on.
+     */
+    private createListenerConnection(): postgres.Sql {
+        if (typeof this.config.connectionString === 'string') {
+            return postgres(this.config.connectionString, {max: 1});
+        }
+
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const {type, realtimeEnabled, poolSize, ...pgOptions} = this.config;
+        return postgres({...pgOptions, max: 1});
+    }
+
+    /* Opens the shared listener once, and hands every later caller the same setup. */
+    private ensureListener(): Promise<void> {
+        if (this.listenerSetup) return this.listenerSetup;
+
+        this.listenerSetup = (async () => {
+            const listener = this.createListenerConnection();
+            this.listener = listener;
+
+            await listener.listen('table_events', (payload) => {
+                let event: any;
+
+                try {
+                    event = JSON.parse(payload);
+                } catch (err) {
+                    this.logger.error('Received a realtime payload that was not valid JSON', err);
+                    return;
+                }
+
+                const callbacks = this.subscribers.get(event.table);
+                if (!callbacks || callbacks.length === 0) return;
+
+                /* A throwing listener must not stop the others being notified */
+                for (const callback of callbacks) {
+                    try {
+                        callback(event);
+                    } catch (err) {
+                        this.logger.error(`A subscriber for ${event.table} threw`, err);
+                    }
+                }
+            });
+        })();
+
+        /* A failed setup must not be cached, or every later subscribe would reuse it. */
+        this.listenerSetup.catch(() => {
+            this.listenerSetup = null;
+            this.listener = null;
+        });
+
+        return this.listenerSetup;
+    }
+
+    private async closeListener(): Promise<void> {
+        const listener = this.listener;
+        this.listener = null;
+        this.listenerSetup = null;
+
+        if (listener) await listener.end();
+    }
+
+    /**
      * REALTIME SUBSCRIPTIONS
      */
     async subscribe(
@@ -106,43 +184,30 @@ export class PostgresDriver implements IDriver {
             this.logger.error(`Failed to attach trigger to ${tableName}`, err);
         }
 
-        /**
-         * Create a DEDICATED connection for listening
-         * Clone the config but force max: 1 because listeners block the connection
-         */
-        let listener: postgres.Sql;
+        /* Awaited, so events fired right after this resolves are not missed. */
+        await this.ensureListener();
 
-        if (typeof this.config.connectionString === 'string') {
-            listener = postgres(this.config.connectionString, {max: 1});
-        } else {
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const {type, realtimeEnabled, poolSize, ...pgOptions} = this.config;
-            listener = postgres({
-                ...pgOptions,
-                max: 1
-            });
-        }
-
-        /**
-         * Start Listening
-         * Don't await this - .listen() keeps the promise open forever. Start and return the unsubscribed handle
-         */
-        listener.listen('table_events', (payload) => {
-            const event = JSON.parse(payload);
-            /* Client-side filtering */
-            if (event.table === tableName) {
-                callback(event);
-            }
-        }).catch(err => this.logger.error("Listener error:", err));
+        const callbacks = this.subscribers.get(tableName) ?? [];
+        callbacks.push(callback);
+        this.subscribers.set(tableName, callbacks);
 
         return {
             unsubscribe: async () => {
-                await listener.end();
+                const list = this.subscribers.get(tableName);
+                if (list) {
+                    const index = list.indexOf(callback);
+                    if (index > -1) list.splice(index, 1);
+                    if (list.length === 0) this.subscribers.delete(tableName);
+                }
+
+                /* Nobody left watching, so the connection can go back. */
+                if (this.subscribers.size === 0) await this.closeListener();
             }
         };
     }
 
     async end() {
+        await this.closeListener();
         await this.sql.end();
     }
 }

@@ -1,7 +1,7 @@
 {
   "name": "kinetic-sql",
-  "version": "3.0.4",
-  "description": "Zero-config, type-safe Postgres & MySQL client with Realtime subscriptions.",
+  "version": "3.1.0",
+  "description": "Zero-config, type-safe Postgres, MySQL & SQLite client with Realtime subscriptions and Spring style Transactions.",
   "type": "module",
   "main": "./dist/index.js",
   "scripts": {
@@ -74,13 +74,19 @@
   "keywords": [
     "postgres",
     "mysql",
+    "sqlite",
     "orm",
     "realtime",
     "typescript",
     "rpc",
     "subscriptions",
     "sql",
-    "events"
+    "events",
+    "transactions",
+    "acid",
+    "savepoint",
+    "propagation",
+    "nestjs"
   ],
   "author": {
     "name": "Kapil Kumar",
