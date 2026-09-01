@@ -5,6 +5,7 @@ import Database from 'better-sqlite3';
 import fs from 'fs';
 import path from 'path';
 import {showBanner} from "../utils/constants.js";
+import {DIM, paint} from "../utils/terminal.js";
 
 /*  -- TYPE MAPPINGS -- */
 const PG_TYPE_MAP: Record<string, string> = {
@@ -186,7 +187,7 @@ function generateMarkerFile() {
 /*  -- MAIN -- */
 async function main() {
     const args = parseArgs();
-    console.log(`🔮 Kinetic SQL: Introspecting ${args.type || 'pg'}...`);
+    console.log(`\n  ${paint(`Reading your ${args.type || 'pg'} schema...`, DIM)}`);
 
     try {
         let result;
@@ -231,21 +232,23 @@ async function main() {
 
         const projectRoot = findProjectRoot(process.cwd());
         const outputPath = path.resolve(projectRoot, 'kinetic-schema', 'kinetic-env.d.ts');
-        const manifestPath = path.resolve(projectRoot, 'kinetic-schema', 'manifest.json');
 
         const dir = path.dirname(outputPath);
         if (!fs.existsSync(dir)) fs.mkdirSync(dir, {recursive: true});
 
         fs.writeFileSync(outputPath, content);
-        console.log(`✅ Generated types at: ${outputPath}`);
         generateMarkerFile();
-        console.log(`✅ Generated manifest at: ${manifestPath}`);
 
         try {
-            showBanner();
+            showBanner({
+                tables: Object.keys(tables).length,
+                functions: functions.length,
+                /* Relative reads better than an absolute path in a terminal. */
+                outputPath: path.relative(process.cwd(), outputPath) || outputPath,
+                sampleTable: Object.keys(tables)[0]
+            });
         } catch {
-            console.info("⚠️ Banner generation failed, but required files generated ✔️");
-            console.info("---- 🚀 You can continue using Kinetic SQL ✨ ----");
+            console.info(`✅ Types written to ${outputPath}`);
         }
 
     } catch (err) {
@@ -254,4 +257,4 @@ async function main() {
     }
 }
 
-main().then(() => console.log(`Setup completed successfully ✨`));
+main();

@@ -1,83 +1,98 @@
-const BOX_WIDTH = 80;
-const BOLD = "\x1b[1m";
-const RESET = "\x1b[0m";
-const ITALIC = "\x1b[3m";
-const BRIGHT = "\x1b[1m";
-const WHITE = "\x1b[37m";
-const GREEN = "\x1b[32m";
-const YELLOW = "\x1b[33m";
-const CONSOLE = "\u203A_"
-// const MAGENTA = "\x1b[35m";
-const RESET_ITALIC = "\x1b[23m";
-const RED = "\x1b[38;2;204;9;5m"
-const CYAN = "\x1b[38;2;0;149;238m";
-const BRIGHT_WHITE_ONLY = "\x1b[97m";
-// const BRIGHT_WHITE = "\x1b[97m\x1b[40m";
-const STYLE = "\x1b[38;2;5;200;120m\x1b[40m";
-// const DIM_WHITE = "\x1b[38;2;192;192;192m\x1b[40m";
+import {ACCENT, ACTION, ALERT, ARROW, BOLD, DIM, DOT, LINK, TICK, charge, header, paint, rule} from './terminal.js';
 
-/* const BRIGHT_YELLOW = "\x1b[93m"; */
+export const ISSUES_URL = 'https://github.com/serial-committer/kinetic-sql/issues';
+export const REPO_URL = 'https://github.com/serial-committer/kinetic-sql';
 
+const GEN_EXAMPLES = [
+    ['Postgres (default)', 'npx k-sql gen --connection "postgres://user:pass@localhost:5432/mydb"'],
+    ['MySQL', 'npx k-sql gen --type mysql --host localhost --user root --db mydb'],
+    ['SQLite', 'npx k-sql gen --type sqlite --db ./dev.db']
+];
+
+const examples = GEN_EXAMPLES
+    .map(([label, cmd]) => `  ${paint(label, DIM)}\n     ${paint(cmd, ACTION)}`)
+    .join('\n');
+
+/**
+ * Printed when the client starts without a generated schema.
+ *
+ * This reaches exactly the people who skipped setup, which makes it the most
+ * valuable place in the library to be clear rather than loud.
+ */
 export const MISSING_SCHEMA_ERROR = `
-  ❌ ${RED}CRITICAL ERROR: Kinetic SQL Schema not found.${RESET}
-      
-  ✅ To fix this, please run the generator command: ${BRIGHT_WHITE_ONLY}${ITALIC}${BOLD}${CONSOLE} npx k-sql gen${RESET_ITALIC}
-  ${GREEN}${BRIGHT}This will generate the necessary type definitions and runtime schema ✨${RESET}
-      
-  Here are a few examples to help you get started:
-   ${CYAN}${BRIGHT}# PostgreSQL (Default)${RESET}
-    ${ITALIC}npx k-sql gen --connection "postgresql://username:password@localhost:5433/mydatabase"${RESET}
-    ${ITALIC}OR${RESET}
-    ${ITALIC}npx k-sql gen --type pg --host localhost --user username --password pass --port 5433 --db mydatabase${RESET}
-   ${CYAN}${BRIGHT}# MySQL${RESET}
-    ${ITALIC}npx k-sql gen --type mysql --host localhost --user root --password pass --db mydatabase${RESET}
-   ${CYAN}${BRIGHT}# SQLite${RESET}
-    ${ITALIC}npx k-sql gen --type sqlite --db ./dev.db${RESET}
-        
-  ${CYAN}${BRIGHT}Note: ${RESET}There are a lot of optional arguments you can pass to the config when using the library (Not needed for the generator command)
-  ${GREEN}${BRIGHT}Please check out the Documentation: ${RESET}https://github.com/serial-committer/Kinetic-SQL--Documentation-and-Issue-Tracker
-      
-  For any issues with installation or usage: 
-  ${RED}Please report them here: ${RESET}https://github.com/serial-committer/Kinetic-SQL--Documentation-and-Issue-Tracker/issues`;
+${header('SETUP INCOMPLETE')}
 
+  ${paint('No generated schema found, so there are no types to load.', BOLD)}
 
-const getVisualWidth = (text: string) => {
-    // eslint-disable-next-line no-control-regex
-    const cleanText = text.replace(/[\u001b\u009b][[()#;?](?:[0-9]{1,4}(?:;[0-9]{0,4}))?[0-m]/g, "");
-    const segmenter = new Intl.Segmenter('en', {granularity: 'grapheme'});
+  Kinetic SQL reads your database once and writes the types it finds.
+  That has not happened yet in this project.
 
-    let width = 0;
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    for (const _ of segmenter.segment(cleanText)) {
-        width += 1;
+     ${paint(ARROW, ACCENT)} ${paint('npx k-sql gen', BOLD + ACTION)}
+
+${examples}
+
+  ${paint(`This writes kinetic-schema/, which the client loads on startup.`, DIM)}
+  ${paint(LINK, ACCENT)} ${paint(ISSUES_URL, DIM)}
+`;
+
+export interface GenerationSummary {
+    tables: number;
+    functions: number;
+    outputPath: string;
+
+    /* One of their own table names, so the example proves the types are real. */
+    sampleTable?: string;
+}
+
+/**
+ * Printed after the generator succeeds.
+ *
+ * The user already knows to run this command, so the job here is to confirm
+ * what landed and surface a wrong connection immediately.
+ */
+export const showBanner = (summary?: GenerationSummary) => {
+    const version = process.env.npm_package_version ?? '';
+
+    console.log('');
+    console.log(header(version));
+    console.log('');
+
+    if (!summary) {
+        console.log(`  ${paint(TICK, ACTION)} ${paint('Types generated.', BOLD)}`);
+        console.log('');
+        console.log(`  ${paint(LINK, ACCENT)} ${paint(ISSUES_URL, DIM)}`);
+        console.log('');
+        return;
     }
 
-    return width;
-}
+    const {tables, functions, outputPath, sampleTable} = summary;
+    const counts = `${tables} ${tables === 1 ? 'table' : 'tables'} ${DOT} ${functions} ${functions === 1 ? 'function' : 'functions'}`;
+    const found = tables > 0;
 
-const logBoxLine = (text: string, textColor = WHITE) => {
-    const currentWidth = getVisualWidth(text);
-    const paddingCount = BOX_WIDTH - 4 - currentWidth;
-    const padding = " ".repeat(Math.max(0, paddingCount));
-    console.log(`${STYLE}│ ${textColor}${text}${STYLE}${padding} │${RESET}`);
-}
-
-export const showBanner = () => {
+    /* An empty schema is a warning, not a success, so it must not wear a tick. */
+    console.log(
+        `  ${paint(found ? TICK : '!', found ? ACTION : ALERT)} ` +
+        `${paint(found ? 'Types generated.' : 'Nothing to generate.', BOLD)}  ${paint(counts, DIM)}`
+    );
+    console.log(`  ${paint(LINK, ACCENT)} ${paint(outputPath, DIM)}`);
     console.log('');
-    console.log(`${STYLE}┌${"─".repeat(BOX_WIDTH - 2)}┐${RESET}`);
-    // logBoxLine(``);
-    logBoxLine(`Thanks for installing Kinetic-SQL ❤️  ✨ `, CYAN);
-    // logBoxLine(``);
-    // logBoxLine(`Please consider donating to our open collective to:`, BRIGHT_WHITE);
-    // logBoxLine(`-help me maintain this package`, DIM_WHITE);
-    // logBoxLine(` &`, CYAN);
-    // logBoxLine(`-other projects I am working on constantly`, DIM_WHITE);
-    // logBoxLine(``);
-    // logBoxLine(`Donate: https://opencollective.com/kinetic-ai`, MAGENTA);
-    // logBoxLine(``);
-    // logBoxLine(`CHEERS! 🍺`, CYAN);
-    // logBoxLine(``);
-    console.log(`${STYLE}└${"─".repeat(BOX_WIDTH - 2)}┘${RESET}`);
-    console.log("");
-    console.log(`${YELLOW}Please submit any feature requests and bug reports @ https://github.com/serial-committer/kinetic-sql/issues ${RESET}`);
-}
+
+    if (!found) {
+        /* Almost always a wrong database rather than a genuinely empty one. */
+        console.log(`  ${paint('No tables were found in that database.', ALERT)}`);
+        console.log(`  ${paint('A wrong --db or --connection produces an empty schema like this,', DIM)}`);
+        console.log(`  ${paint('so check the target before wiring the client up.', DIM)}`);
+    } else {
+        console.log(`  ${paint('Your tables and procedures autocomplete from here:', DIM)}`);
+        console.log('');
+        const example = sampleTable ?? 'your_table';
+        console.log(`     ${paint(ARROW, ACCENT)} ${paint(`await client.subscribe('${example}', handler)`, ACTION)}`);
+    }
+
+    console.log('');
+    console.log(`  ${paint(LINK, ACCENT)} ${paint(ISSUES_URL, DIM)}`);
+    console.log('');
+};
+
+/* Retained so the rule stays available to anything that renders its own block. */
+export {rule, charge};
