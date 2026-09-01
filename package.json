@@ -1,10 +1,11 @@
 {
   "name": "kinetic-sql",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "description": "Zero-config, type-safe Postgres, MySQL & SQLite client with Realtime subscriptions and Spring style Transactions.",
   "type": "module",
   "main": "./dist/index.js",
   "scripts": {
+    "postinstall": "node scripts/postinstall.mjs",
     "prebuild": "rm -rf dist",
     "build": "tsup",
     "prepublishOnly": "npm run build",
@@ -40,6 +41,7 @@
   },
   "files": [
     "dist",
+    "scripts",
     "README.md",
     "LICENSE"
   ],
